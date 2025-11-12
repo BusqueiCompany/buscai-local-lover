@@ -25,6 +25,7 @@ export default function Home() {
   const [vipLevel] = useState<"bronze" | "gold" | "diamond">("bronze");
   const [points] = useState(1250);
   const [userName] = useState("João");
+  const [userLevel] = useState<"free" | "vip" | "partner" | "support" | "admin">("free");
 
   const getVipBadgeClass = () => {
     switch (vipLevel) {
@@ -32,6 +33,28 @@ export default function Home() {
       case "gold": return "gradient-vip-gold";
       case "diamond": return "gradient-vip-diamond";
       default: return "";
+    }
+  };
+
+  const getUserLevelNumber = () => {
+    switch (userLevel) {
+      case "free": return 1;
+      case "vip": return 100;
+      case "partner": return 250;
+      case "support": return 500;
+      case "admin": return 1010;
+      default: return 1;
+    }
+  };
+
+  const getUserLevelColor = () => {
+    switch (userLevel) {
+      case "free": return "text-muted-foreground";
+      case "vip": return "text-yellow-500";
+      case "partner": return "text-blue-500";
+      case "support": return "text-purple-500";
+      case "admin": return "text-red-700";
+      default: return "text-muted-foreground";
     }
   };
 
@@ -68,6 +91,9 @@ export default function Home() {
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Sparkles className="h-3 w-3 text-accent" />
                   <span>{points} pontos</span>
+                </div>
+                <div className={`text-xs font-medium ${getUserLevelColor()}`}>
+                  LVL {getUserLevelNumber()}
                 </div>
               </div>
             </div>
