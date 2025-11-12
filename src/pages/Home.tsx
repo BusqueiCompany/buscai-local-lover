@@ -10,14 +10,14 @@ import banner1 from "@/assets/banner-1.png";
 import banner2 from "@/assets/banner-2.png";
 
 const menuItems = [
-  { icon: "🍔", label: "Lanches", route: "/lanches", locked: false },
-  { icon: "🍽️", label: "Restaurantes", route: "/restaurantes", locked: false },
-  { icon: "🛒", label: "Mercados", route: "/mercados", locked: false },
+  { icon: "🍔", label: "Lanches", route: "/lanches", locked: true },
+  { icon: "🍽️", label: "Restaurantes", route: "/restaurantes", locked: true },
+  { icon: "🛒", label: "Mercados", route: "/mercados", locked: true },
   { icon: "🐾", label: "Petshops", route: "/petshops", locked: true },
   { icon: "🍻", label: "Bebidas", route: "/bebidas", locked: true },
   { icon: "💊", label: "Farmácia", route: "/farmacia", locked: true },
-  { icon: "💎", label: "Comprar VIP", route: "/vip", locked: false },
-  { icon: "🏪", label: "Parceiros", route: "/parceiros", locked: false },
+  { icon: "💰", label: "Ofertas Especiais", route: "/ofertas", locked: true },
+  { icon: "💬", label: "Suporte", route: "/suporte", locked: true },
 ];
 
 export default function Home() {
