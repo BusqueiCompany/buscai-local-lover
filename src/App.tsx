@@ -10,6 +10,7 @@ import Radar from "./pages/Radar";
 import Perfil from "./pages/Perfil";
 import Configuracoes from "./pages/Configuracoes";
 import Placeholder from "./pages/Placeholder";
+import Vip from "./pages/Vip";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,7 +38,7 @@ const App = () => (
           <Route path="/petshops" element={<Placeholder />} />
           <Route path="/bebidas" element={<Placeholder />} />
           <Route path="/farmacia" element={<Placeholder />} />
-          <Route path="/vip" element={<Placeholder />} />
+          <Route path="/vip" element={<Vip />} />
           <Route path="/parceiros" element={<Placeholder />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
