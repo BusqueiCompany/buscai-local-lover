@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { BottomNav } from "@/components/ui/bottom-nav";
+import { FloatingActionButton } from "@/components/ui/fab";
 import { useNavigate } from "react-router-dom";
 import banner1 from "@/assets/banner-1.png";
 import banner2 from "@/assets/banner-2.png";
@@ -175,6 +176,9 @@ export default function Home() {
           </Button>
         </div>
       </main>
+
+      {/* Botão Flutuante de Pedido */}
+      <FloatingActionButton />
 
       <BottomNav />
     </div>
