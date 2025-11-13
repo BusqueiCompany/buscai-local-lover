@@ -1,4 +1,4 @@
-import { Home, Search, ShoppingCart, User, Settings } from "lucide-react";
+import { Home, Search, Star, User, Settings } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
 
@@ -25,15 +25,12 @@ export function BottomNav() {
         </NavLink>
 
         <NavLink
-          to="/pedido"
-          className="flex flex-col items-center justify-center flex-1 h-full relative"
+          to="/vip"
+          className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground transition-colors"
+          activeClassName="text-primary"
         >
-          <div className="absolute -top-2 flex items-center justify-center">
-            <div className="bg-primary rounded-full p-3 shadow-lg">
-              <ShoppingCart className="h-6 w-6 text-primary-foreground" />
-            </div>
-          </div>
-          <span className="text-xs mt-6 text-muted-foreground">Pedido</span>
+          <Star className="h-5 w-5 mb-1 fill-yellow-500 text-yellow-500" />
+          <span className="text-xs">Área VIP</span>
         </NavLink>
 
         <NavLink
