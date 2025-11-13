@@ -46,6 +46,15 @@ All colors MUST be HSL.
     --vip-gold: 45 100% 51%;
     --vip-diamond: 200 80% 60%;
     
+    /* Radar colors */
+    --radar-orange: 25 100% 50%;
+    --radar-blue: 201 65% 52%;
+    --radar-green: 122 39% 49%;
+    --radar-yellow: 45 100% 51%;
+    --radar-red: 0 100% 66%;
+    --radar-pink: 340 82% 52%;
+    --radar-title: 0 0% 10%;
+    
     /* Gradient definitions */
     --gradient-primary: linear-gradient(135deg, hsl(14 100% 60%) 0%, hsl(355 85% 55%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 71% 45%) 100%);

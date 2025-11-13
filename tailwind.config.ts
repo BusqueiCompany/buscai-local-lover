@@ -62,6 +62,15 @@ export default {
           gold: "hsl(var(--vip-gold))",
           diamond: "hsl(var(--vip-diamond))",
         },
+        radar: {
+          orange: "hsl(var(--radar-orange))",
+          blue: "hsl(var(--radar-blue))",
+          green: "hsl(var(--radar-green))",
+          yellow: "hsl(var(--radar-yellow))",
+          red: "hsl(var(--radar-red))",
+          pink: "hsl(var(--radar-pink))",
+          title: "hsl(var(--radar-title))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
