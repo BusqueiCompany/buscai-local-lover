@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Bell, MapPin, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Bell, MapPin, Sparkles, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { FloatingActionButton } from "@/components/ui/fab";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import banner1 from "@/assets/banner-1.png";
 import banner2 from "@/assets/banner-2.png";
 
@@ -23,41 +25,64 @@ const menuItems = [
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user, userRole, isAdmin, loading } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
   const [vipLevel] = useState<"bronze" | "gold" | "diamond">("bronze");
   const [points] = useState(1250);
-  const [userName] = useState("João");
-  const [userLevel] = useState<"free" | "vip" | "partner" | "support" | "admin">("free");
 
-  const getVipBadgeClass = () => {
-    switch (vipLevel) {
-      case "bronze": return "gradient-vip-bronze";
-      case "gold": return "gradient-vip-gold";
-      case "diamond": return "gradient-vip-diamond";
-      default: return "";
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user?.id)
+      .maybeSingle();
+
+    if (data) {
+      setProfile(data);
     }
   };
 
   const getUserLevelNumber = () => {
-    switch (userLevel) {
-      case "free": return 1;
-      case "vip": return 100;
-      case "partner": return 250;
-      case "support": return 500;
-      case "admin": return 1010;
+    switch (userRole) {
+      case "FREE": return 1;
+      case "VIP": return 100;
+      case "PARCEIRO": return 250;
+      case "SUPORTE": return 500;
+      case "ADMINISTRADOR": return 1010;
       default: return 1;
     }
   };
 
   const getUserLevelColor = () => {
-    switch (userLevel) {
-      case "free": return "text-muted-foreground";
-      case "vip": return "text-yellow-500";
-      case "partner": return "text-blue-500";
-      case "support": return "text-purple-500";
-      case "admin": return "text-red-700";
+    switch (userRole) {
+      case "FREE": return "text-muted-foreground";
+      case "VIP": return "text-yellow-500";
+      case "PARCEIRO": return "text-blue-500";
+      case "SUPORTE": return "text-purple-500";
+      case "ADMINISTRADOR": return "text-red-700";
       default: return "text-muted-foreground";
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-primary">
+        <p className="text-foreground">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-20 bg-background">
@@ -79,13 +104,15 @@ export default function Home() {
               <Avatar className="h-12 w-12 border-2 border-primary">
                 <AvatarImage src="" />
                 <AvatarFallback className="bg-primary text-primary-foreground">
-                  {userName.charAt(0)}
+                  {profile?.nome_completo?.charAt(0) || user?.email?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold">{userName}</span>
-                  <Badge className={`${getVipBadgeClass()} text-white text-xs px-2 py-0`}>
+                  <span className="font-semibold">
+                    {profile?.nome_completo?.split(" ")[0] || user?.email?.split("@")[0] || "Usuário"}
+                  </span>
+                  <Badge className={`gradient-vip-${vipLevel} text-white text-xs px-2 py-0`}>
                     {vipLevel.toUpperCase()}
                   </Badge>
                 </div>
@@ -94,7 +121,7 @@ export default function Home() {
                   <span>{points} pontos</span>
                 </div>
                 <div className={`text-xs font-medium ${getUserLevelColor()}`}>
-                  LVL {getUserLevelNumber()}
+                  LVL {getUserLevelNumber()} - {userRole}
                 </div>
               </div>
             </div>
@@ -119,6 +146,15 @@ export default function Home() {
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
         {/* Grade de Menus 4x2 */}
         <div className="grid grid-cols-4 gap-4">
+          {isAdmin && (
+            <button
+              onClick={() => navigate("/admin")}
+              className="flex flex-col items-center gap-2 p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 transition-all shadow-lg relative"
+            >
+              <Shield className="w-8 h-8 text-white" />
+              <span className="text-xs text-center font-bold text-white">Admin</span>
+            </button>
+          )}
           {menuItems.map((item, index) => (
             <button
               key={index}
