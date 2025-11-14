@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/busquei-logo.png";
 
 const bairros = [
@@ -18,13 +20,100 @@ const bairros = [
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [outrosBairro, setOutrosBairro] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [selectedBairro, setSelectedBairro] = useState("");
+  const [selectedSexo, setSelectedSexo] = useState("");
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Simulação de login/cadastro
-    toast.success(isLogin ? "Login realizado com sucesso!" : "Cadastro realizado com sucesso!");
-    navigate("/");
+    setLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const senha = formData.get("senha") as string;
+
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password: senha,
+        });
+
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            toast.error("Email ou senha incorretos");
+          } else {
+            toast.error("Erro ao fazer login: " + error.message);
+          }
+          return;
+        }
+
+        toast.success("Login realizado com sucesso!");
+        navigate("/");
+      } else {
+        const nome = formData.get("nome") as string;
+        const nascimento = formData.get("nascimento") as string;
+        const endereco = formData.get("endereco") as string;
+        const numero = formData.get("numero") as string;
+        const telefone = formData.get("telefone") as string;
+        const cpf = formData.get("cpf") as string;
+        const referencia = formData.get("referencia") as string;
+
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password: senha,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              nome_completo: nome,
+            },
+          },
+        });
+
+        if (signUpError) {
+          if (signUpError.message.includes("already registered")) {
+            toast.error("Este email já está cadastrado");
+          } else {
+            toast.error("Erro ao criar conta: " + signUpError.message);
+          }
+          return;
+        }
+
+        if (authData.user) {
+          const { error: profileError } = await supabase.from("profiles").update({
+            nome_completo: nome,
+            data_nascimento: nascimento,
+            endereco,
+            numero,
+            telefone,
+            sexo: selectedSexo,
+            cpf: cpf || null,
+            referencia: referencia || null,
+            bairro: selectedBairro === "Outros" ? outrosBairro : selectedBairro,
+          }).eq("id", authData.user.id);
+
+          if (profileError) {
+            console.error("Error updating profile:", profileError);
+          }
+        }
+
+        toast.success("Cadastro realizado com sucesso!");
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Erro inesperado. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,7 +163,7 @@ export default function Auth() {
 
                 <div className="space-y-2">
                   <Label htmlFor="sexo">Sexo</Label>
-                  <Select required>
+                  <Select required value={selectedSexo} onValueChange={setSelectedSexo}>
                     <SelectTrigger id="sexo">
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
@@ -115,11 +204,17 @@ export default function Auth() {
 
                 <div className="space-y-2">
                   <Label htmlFor="bairro">Bairro</Label>
-                  <Select required onValueChange={(value) => {
-                    if (value === "Outros") {
-                      setOutrosBairro("");
-                    }
-                  }}>
+                  <Select
+                    required
+                    name="bairro"
+                    value={selectedBairro}
+                    onValueChange={(value) => {
+                      setSelectedBairro(value);
+                      if (value !== "Outros") {
+                        setOutrosBairro("");
+                      }
+                    }}
+                  >
                     <SelectTrigger id="bairro">
                       <SelectValue placeholder="Selecione seu bairro" />
                     </SelectTrigger>
@@ -133,23 +228,29 @@ export default function Auth() {
                   </Select>
                 </div>
 
-                {outrosBairro === "" && (
+                {selectedBairro === "Outros" && (
                   <div className="space-y-2">
                     <Label htmlFor="outro-bairro">Qual bairro?</Label>
                     <Input
                       id="outro-bairro"
+                      name="outro-bairro"
                       type="text"
                       placeholder="Digite o nome do bairro"
                       value={outrosBairro}
                       onChange={(e) => setOutrosBairro(e.target.value)}
+                      required
                     />
                   </div>
                 )}
               </>
             )}
 
-            <Button type="submit" className="w-full gradient-primary text-lg font-semibold">
-              {isLogin ? "Entrar" : "Criar Conta"}
+            <Button
+              type="submit"
+              className="w-full gradient-primary text-lg font-semibold"
+              disabled={loading}
+            >
+              {loading ? "Aguarde..." : isLogin ? "Entrar" : "Criar Conta"}
             </Button>
 
             {isLogin && (
