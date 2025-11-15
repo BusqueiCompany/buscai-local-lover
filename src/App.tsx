@@ -13,8 +13,10 @@ import Configuracoes from "./pages/Configuracoes";
 import Placeholder from "./pages/Placeholder";
 import Vip from "./pages/Vip";
 import Suporte from "./pages/Suporte";
-import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/admin/Dashboard";
+import Users from "./pages/admin/Users";
+import Seeds from "./pages/admin/Seeds";
+import ImportarLojas from "./pages/admin/ImportarLojas";
 import GerenciarLojas from "./pages/admin/GerenciarLojas";
 import GerenciarProdutos from "./pages/admin/GerenciarProdutos";
 import AtualizarPrecos from "./pages/admin/AtualizarPrecos";
@@ -36,8 +38,11 @@ const App = () => (
             <Route path="/radar" element={<Radar />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<Users />} />
+            <Route path="/admin/seeds" element={<Seeds />} />
+            <Route path="/admin/importar-lojas" element={<ImportarLojas />} />
             <Route path="/admin/lojas" element={<GerenciarLojas />} />
             <Route path="/admin/produtos" element={<GerenciarProdutos />} />
             <Route path="/admin/precos" element={<AtualizarPrecos />} />
