@@ -20,7 +20,7 @@ interface UserProfile {
   role: UserRole;
 }
 
-const ADMIN_ROOT_EMAIL = "admin@busquei.com";
+const ADMIN_ROOT_EMAIL = "busqueisuporte@gmail.com";
 
 export default function Admin() {
   const { isAdmin, loading: authLoading } = useAuth();

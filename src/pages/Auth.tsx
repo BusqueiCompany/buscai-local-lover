@@ -42,8 +42,13 @@ export default function Auth() {
 
     try {
       if (isLogin) {
+        if (!email || !senha) {
+          toast.error("Por favor, preencha email e senha");
+          return;
+        }
+
         const { error } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim(),
           password: senha,
         });
 
@@ -67,8 +72,13 @@ export default function Auth() {
         const cpf = formData.get("cpf") as string;
         const referencia = formData.get("referencia") as string;
 
+        if (!email || !senha || !nome) {
+          toast.error("Por favor, preencha todos os campos obrigatórios");
+          return;
+        }
+
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
-          email,
+          email: email.trim(),
           password: senha,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
