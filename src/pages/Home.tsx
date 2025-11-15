@@ -92,8 +92,17 @@ export default function Home() {
           {/* Endereço */}
           <div className="flex items-center justify-center gap-2 mb-3">
             <MapPin className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">Rua Exemplo, 123 - Paciência</span>
-            <Button variant="link" size="sm" className="text-xs text-primary p-0 h-auto">
+            <span className="text-sm font-medium">
+              {profile?.endereco && profile?.numero 
+                ? `${profile.endereco}, ${profile.numero} - ${profile.bairro || 'Não informado'}`
+                : 'Endereço não cadastrado'}
+            </span>
+            <Button 
+              variant="link" 
+              size="sm" 
+              className="text-xs text-primary p-0 h-auto"
+              onClick={() => navigate("/perfil")}
+            >
               Trocar
             </Button>
           </div>
@@ -112,14 +121,18 @@ export default function Home() {
                   <span className="font-semibold">
                     {profile?.nome_completo?.split(" ")[0] || user?.email?.split("@")[0] || "Usuário"}
                   </span>
-                  <Badge className={`gradient-vip-${vipLevel} text-white text-xs px-2 py-0`}>
-                    {vipLevel.toUpperCase()}
-                  </Badge>
+                  {userRole === "VIP" && (
+                    <Badge className={`gradient-vip-${vipLevel} text-white text-xs px-2 py-0`}>
+                      {vipLevel.toUpperCase()}
+                    </Badge>
+                  )}
                 </div>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Sparkles className="h-3 w-3 text-accent" />
-                  <span>{points} pontos</span>
-                </div>
+                {userRole === "VIP" && (
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Sparkles className="h-3 w-3 text-accent" />
+                    <span>{points} pontos</span>
+                  </div>
+                )}
                 <div className={`text-xs font-medium ${getUserLevelColor()}`}>
                   LVL {getUserLevelNumber()} - {userRole}
                 </div>
@@ -127,7 +140,12 @@ export default function Home() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="relative">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative"
+                onClick={() => navigate("/notificacoes")}
+              >
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-1 right-1 h-2 w-2 bg-secondary rounded-full" />
               </Button>
