@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     // Check if admin already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const adminExists = existingUsers?.users.find(
-      (user) => user.email === 'admin@busquei.com'
+      (user) => user.email === 'busqueisuporte@gmail.com'
     );
 
     if (adminExists) {
@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
 
     // Create admin user
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: 'admin@busquei.com',
+      email: 'busqueisuporte@gmail.com',
       password: 'admin001',
       email_confirm: true,
       user_metadata: {
@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
       .from('profiles')
       .upsert({
         id: authData.user.id,
-        email: 'admin@busquei.com',
+        email: 'busqueisuporte@gmail.com',
         nome_completo: 'Administrador',
         is_active: true,
       });
@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ 
         message: 'Admin user created successfully',
         userId: authData.user.id,
-        email: 'admin@busquei.com',
+        email: 'busqueisuporte@gmail.com',
         password: 'admin001'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
