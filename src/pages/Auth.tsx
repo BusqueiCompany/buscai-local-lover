@@ -147,28 +147,28 @@ export default function Auth() {
               <>
                 <div className="space-y-2">
                   <Label htmlFor="nome">Nome Completo</Label>
-                  <Input id="nome" type="text" placeholder="Seu nome completo" required />
+                  <Input id="nome" name="nome" type="text" placeholder="Seu nome completo" required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="nascimento">Data de Nascimento</Label>
-                  <Input id="nascimento" type="date" required />
+                  <Input id="nascimento" name="nascimento" type="date" required />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="endereco">Endereço</Label>
-                    <Input id="endereco" type="text" placeholder="Rua/Av" required />
+                    <Input id="endereco" name="endereco" type="text" placeholder="Rua/Av" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="numero">Número</Label>
-                    <Input id="numero" type="text" placeholder="Nº" required />
+                    <Input id="numero" name="numero" type="text" placeholder="Nº" required />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="telefone">Telefone</Label>
-                  <Input id="telefone" type="tel" placeholder="(21) 99999-9999" required />
+                  <Input id="telefone" name="telefone" type="tel" placeholder="(21) 99999-9999" required />
                 </div>
 
                 <div className="space-y-2">
@@ -190,26 +190,26 @@ export default function Auth() {
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="seu@email.com" required />
+              <Input id="email" name="email" type="email" placeholder="seu@email.com" required />
             </div>
 
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="cpf">CPF (opcional)</Label>
-                <Input id="cpf" type="text" placeholder="000.000.000-00" />
+                <Input id="cpf" name="cpf" type="text" placeholder="000.000.000-00" />
               </div>
             )}
 
             <div className="space-y-2">
               <Label htmlFor="senha">Senha</Label>
-              <Input id="senha" type="password" placeholder="••••••••" required />
+              <Input id="senha" name="senha" type="password" placeholder="••••••••" required />
             </div>
 
             {!isLogin && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="referencia">Ponto de Referência</Label>
-                  <Input id="referencia" type="text" placeholder="Ex: Próximo ao mercado X" />
+                  <Input id="referencia" name="referencia" type="text" placeholder="Ex: Próximo ao mercado X" />
                 </div>
 
                 <div className="space-y-2">
