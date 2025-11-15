@@ -19,31 +19,45 @@ export default function AdminDashboard() {
 
   const menuItems = [
     {
+      title: "Users",
+      description: "Gerenciar níveis e permissões de usuários",
+      icon: Users,
+      path: "/admin/users",
+      color: "bg-[#1976D2] hover:bg-[#1565C0]",
+    },
+    {
+      title: "Seeds",
+      description: "Visualizar e editar dados completos dos usuários",
+      icon: Users,
+      path: "/admin/seeds",
+      color: "bg-[#FF7A00] hover:bg-[#E66A00]",
+    },
+    {
+      title: "Markets Importer",
+      description: "Importar lojas via arquivo .txt",
+      icon: Store,
+      path: "/admin/importar-lojas",
+      color: "bg-[#1976D2] hover:bg-[#1565C0]",
+    },
+    {
       title: "Gerenciar Lojas",
       description: "Cadastrar, editar e ativar/desativar lojas",
       icon: Store,
       path: "/admin/lojas",
-      color: "bg-[#1976D2] hover:bg-[#1565C0]",
+      color: "bg-[#FF7A00] hover:bg-[#E66A00]",
     },
     {
       title: "Gerenciar Produtos",
       description: "Adicionar e editar produtos do sistema",
       icon: Package,
       path: "/admin/produtos",
-      color: "bg-[#FF7A00] hover:bg-[#E66A00]",
+      color: "bg-[#1976D2] hover:bg-[#1565C0]",
     },
     {
       title: "Atualizar Preços",
       description: "Gerenciar preços e promoções",
       icon: DollarSign,
       path: "/admin/precos",
-      color: "bg-[#1976D2] hover:bg-[#1565C0]",
-    },
-    {
-      title: "Gerenciar Usuários",
-      description: "Controlar níveis e permissões",
-      icon: Users,
-      path: "/admin",
       color: "bg-[#FF7A00] hover:bg-[#E66A00]",
     },
   ];
