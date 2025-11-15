@@ -175,10 +175,10 @@ export default function Perfil() {
             <Button
               variant="outline"
               className="w-full justify-start h-12"
-              onClick={() => navigate("/admin")}
+              onClick={() => navigate("/admin/dashboard")}
             >
               <Shield className="h-5 w-5 mr-3" />
-              Painel Administrador
+              Menu Administrador
             </Button>
           )}
 
