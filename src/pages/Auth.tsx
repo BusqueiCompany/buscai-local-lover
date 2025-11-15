@@ -72,7 +72,7 @@ export default function Auth() {
         const cpf = formData.get("cpf") as string;
         const referencia = formData.get("referencia") as string;
 
-        if (!email || !senha || !nome) {
+        if (!email || !senha || !nome || !nascimento || !endereco || !numero || !telefone || !selectedSexo || !selectedBairro) {
           toast.error("Por favor, preencha todos os campos obrigatórios");
           return;
         }
