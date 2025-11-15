@@ -14,6 +14,10 @@ import Placeholder from "./pages/Placeholder";
 import Vip from "./pages/Vip";
 import Suporte from "./pages/Suporte";
 import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/admin/Dashboard";
+import GerenciarLojas from "./pages/admin/GerenciarLojas";
+import GerenciarProdutos from "./pages/admin/GerenciarProdutos";
+import AtualizarPrecos from "./pages/admin/AtualizarPrecos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +37,10 @@ const App = () => (
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/lojas" element={<GerenciarLojas />} />
+            <Route path="/admin/produtos" element={<GerenciarProdutos />} />
+            <Route path="/admin/precos" element={<AtualizarPrecos />} />
             
             {/* Placeholder routes */}
             <Route path="/buscar" element={<Placeholder />} />

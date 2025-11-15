@@ -14,6 +14,218 @@ export type Database = {
   }
   public: {
     Tables: {
+      categorias_lojas: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      categorias_produtos: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          parent_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          parent_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          parent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categorias_produtos_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      historico_precos: {
+        Row: {
+          created_at: string
+          id: string
+          preco: number
+          produto_loja_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          preco: number
+          produto_loja_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          preco?: number
+          produto_loja_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historico_precos_produto_loja_id_fkey"
+            columns: ["produto_loja_id"]
+            isOneToOne: false
+            referencedRelation: "produtos_lojas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lojas: {
+        Row: {
+          categoria_id: string | null
+          created_at: string
+          endereco: string
+          foto_url: string | null
+          horario: string | null
+          id: string
+          is_active: boolean
+          latitude: number | null
+          longitude: number | null
+          nome: string
+          telefone: string | null
+          updated_at: string
+        }
+        Insert: {
+          categoria_id?: string | null
+          created_at?: string
+          endereco: string
+          foto_url?: string | null
+          horario?: string | null
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          nome: string
+          telefone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          categoria_id?: string | null
+          created_at?: string
+          endereco?: string
+          foto_url?: string | null
+          horario?: string | null
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          nome?: string
+          telefone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lojas_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_lojas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      produtos: {
+        Row: {
+          categoria_id: string | null
+          created_at: string
+          id: string
+          imagem_url: string | null
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          categoria_id?: string | null
+          created_at?: string
+          id?: string
+          imagem_url?: string | null
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          categoria_id?: string | null
+          created_at?: string
+          id?: string
+          imagem_url?: string | null
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      produtos_lojas: {
+        Row: {
+          created_at: string
+          economia_valor: number | null
+          id: string
+          loja_id: string
+          preco_atual: number
+          produto_id: string
+          promocao_percentual: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          economia_valor?: number | null
+          id?: string
+          loja_id: string
+          preco_atual: number
+          produto_id: string
+          promocao_percentual?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          economia_valor?: number | null
+          id?: string
+          loja_id?: string
+          preco_atual?: number
+          produto_id?: string
+          promocao_percentual?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtos_lojas_loja_id_fkey"
+            columns: ["loja_id"]
+            isOneToOne: false
+            referencedRelation: "lojas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produtos_lojas_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           bairro: string | null
