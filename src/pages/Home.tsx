@@ -1,5 +1,18 @@
 import { useState, useEffect } from "react";
-import { Bell, MapPin, Sparkles, Shield } from "lucide-react";
+import { 
+  Bell, 
+  MapPin, 
+  Sparkles, 
+  Shield, 
+  UtensilsCrossed, 
+  ChefHat, 
+  ShoppingCart, 
+  PawPrint, 
+  Wine, 
+  Pill, 
+  BadgePercent, 
+  Headphones 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,14 +26,14 @@ import banner1 from "@/assets/banner-1.png";
 import banner2 from "@/assets/banner-2.png";
 
 const menuItems = [
-  { icon: "🍔", label: "Lanches", route: "/lanches", locked: true },
-  { icon: "🍽️", label: "Restaurantes", route: "/restaurantes", locked: true },
-  { icon: "🛒", label: "Mercados", route: "/mercados", locked: true },
-  { icon: "🐾", label: "Petshops", route: "/petshops", locked: true },
-  { icon: "🍻", label: "Bebidas", route: "/bebidas", locked: true },
-  { icon: "💊", label: "Farmácia", route: "/farmacia", locked: true },
-  { icon: "💰", label: "Ofertas Especiais", route: "/ofertas", locked: true },
-  { icon: "💬", label: "Suporte", route: "/suporte", locked: true },
+  { icon: UtensilsCrossed, label: "Lanches", route: "/lanches", locked: true },
+  { icon: ChefHat, label: "Restaurantes", route: "/restaurantes", locked: true },
+  { icon: ShoppingCart, label: "Mercados", route: "/mercados", locked: true },
+  { icon: PawPrint, label: "Petshops", route: "/petshops", locked: true },
+  { icon: Wine, label: "Bebidas", route: "/bebidas", locked: true },
+  { icon: Pill, label: "Farmácia", route: "/farmacia", locked: true },
+  { icon: BadgePercent, label: "Ofertas Especiais", route: "/ofertas", locked: true },
+  { icon: Headphones, label: "Suporte", route: "/suporte", locked: true },
 ];
 
 export default function Home() {
@@ -173,37 +186,40 @@ export default function Home() {
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
         {/* Grade de Menus 4x2 */}
-        <div className="grid grid-cols-4 gap-2">
-          {menuItems.map((item, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                if (item.locked) {
-                  navigate("/vip");
-                } else {
-                  navigate(item.route);
-                }
-              }}
-              className="flex flex-col items-center gap-1 p-2 rounded-xl bg-card hover:bg-muted transition-colors relative"
-            >
-              {item.locked && (
-                <div className="absolute -top-1 -right-1 bg-accent text-white rounded-full p-1">
-                  <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              )}
-              <span className="text-3xl">{item.icon}</span>
-              <span className="text-[10px] text-center font-medium leading-tight">{item.label}</span>
-            </button>
-          ))}
+        <div className="grid grid-cols-4 gap-1.5">
+          {menuItems.map((item, index) => {
+            const IconComponent = item.icon;
+            return (
+              <button
+                key={index}
+                onClick={() => {
+                  if (item.locked) {
+                    navigate("/vip");
+                  } else {
+                    navigate(item.route);
+                  }
+                }}
+                className="flex flex-col items-center gap-1 p-1.5 rounded-xl bg-card hover:bg-muted transition-colors relative"
+              >
+                {item.locked && (
+                  <div className="absolute -top-1 -right-1 bg-accent text-white rounded-full p-0.5">
+                    <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+                <IconComponent className="w-7 h-7 text-primary" strokeWidth={1.5} />
+                <span className="text-[9px] text-center font-medium leading-tight">{item.label}</span>
+              </button>
+            );
+          })}
           {isAdmin && (
             <button
               onClick={() => navigate("/admin")}
-              className="flex flex-col items-center gap-1 p-2 rounded-xl bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 transition-all shadow-lg relative"
+              className="flex flex-col items-center gap-1 p-1.5 rounded-xl bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 transition-all shadow-lg relative"
             >
-              <Shield className="w-7 h-7 text-white" />
-              <span className="text-[10px] text-center font-bold text-white leading-tight">Admin</span>
+              <Shield className="w-7 h-7 text-white" strokeWidth={1.5} />
+              <span className="text-[9px] text-center font-bold text-white leading-tight">Admin</span>
             </button>
           )}
         </div>
