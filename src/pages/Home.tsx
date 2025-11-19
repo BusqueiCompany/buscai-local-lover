@@ -13,14 +13,14 @@ import banner1 from "@/assets/banner-1.png";
 import banner2 from "@/assets/banner-2.png";
 
 const menuItems = [
-  { icon: "🍔", label: "Lanches", route: "/lanches", locked: true },
-  { icon: "🍽️", label: "Restaurantes", route: "/restaurantes", locked: true },
-  { icon: "🛒", label: "Mercados", route: "/mercados", locked: true },
-  { icon: "🐾", label: "Petshops", route: "/petshops", locked: true },
-  { icon: "🍻", label: "Bebidas", route: "/bebidas", locked: true },
+  { icon: "🥖", label: "Padaria", route: "/padaria", locked: true },
+  { icon: "💧", label: "Água/Gás", route: "/agua-gas", locked: true },
+  { icon: "🧸", label: "Bazar", route: "/bazar", locked: true },
   { icon: "💊", label: "Farmácia", route: "/farmacia", locked: true },
-  { icon: "💰", label: "Ofertas Especiais", route: "/ofertas", locked: true },
-  { icon: "💬", label: "Suporte", route: "/suporte", locked: true },
+  { icon: "🛒", label: "Mercado", route: "/mercados", locked: true },
+  { icon: "🍔", label: "Lanches", route: "/lanches", locked: true },
+  { icon: "🐾", label: "Pet", route: "/petshops", locked: true },
+  { icon: "🔧", label: "Serviços", route: "/servicos", locked: true },
 ];
 
 export default function Home() {
@@ -225,18 +225,17 @@ export default function Home() {
         {/* Botões Principais */}
         <div className="space-y-3">
           <Button
-            onClick={() => navigate("/economizar")}
-            className="w-full h-14 text-lg font-bold gradient-primary pulse-glow"
+            onClick={() => navigate("/radar")}
+            className="w-full h-14 text-lg font-bold bg-[#FF6B6B] hover:bg-[#FF5252] text-white"
           >
-            🎯 Quero Economizar %
+            📍 Radar de Preço
           </Button>
 
           <Button
-            onClick={() => navigate("/radar")}
-            variant="outline"
-            className="w-full h-14 text-lg font-bold border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+            onClick={() => navigate("/ofertas")}
+            className="w-full h-14 text-lg font-bold bg-[#FFD93D] hover:bg-[#FFC233] text-black"
           >
-            📍 Radar de Preços
+            ⚡ Ofertas Relâmpago
           </Button>
         </div>
       </main>
