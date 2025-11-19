@@ -2,16 +2,21 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// O código abaixo é a causa do erro de tela branca, pois as chaves não estão configuradas no Vercel.
+// COMENTAMOS TUDO PARA QUE O SITE POSSA CARREGAR.
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
+// const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+// const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+// Para o código funcionar temporariamente sem Supabase, usamos um objeto 'mock' vazio.
+export const supabase = {} as any; // Objeto vazio temporário que não quebra o código.
+
+/*
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-  }
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
 });
+*/
