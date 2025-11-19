@@ -173,16 +173,7 @@ export default function Home() {
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
         {/* Grade de Menus 4x2 */}
-        <div className="grid grid-cols-4 gap-4">
-          {isAdmin && (
-            <button
-              onClick={() => navigate("/admin")}
-              className="flex flex-col items-center gap-2 p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 transition-all shadow-lg relative"
-            >
-              <Shield className="w-8 h-8 text-white" />
-              <span className="text-xs text-center font-bold text-white">Admin</span>
-            </button>
-          )}
+        <div className="grid grid-cols-4 gap-2">
           {menuItems.map((item, index) => (
             <button
               key={index}
@@ -193,7 +184,7 @@ export default function Home() {
                   navigate(item.route);
                 }
               }}
-              className="flex flex-col items-center gap-2 p-3 rounded-xl bg-card hover:bg-muted transition-colors relative"
+              className="flex flex-col items-center gap-1 p-2 rounded-xl bg-card hover:bg-muted transition-colors relative"
             >
               {item.locked && (
                 <div className="absolute -top-1 -right-1 bg-accent text-white rounded-full p-1">
@@ -202,10 +193,19 @@ export default function Home() {
                   </svg>
                 </div>
               )}
-              <span className="text-4xl">{item.icon}</span>
-              <span className="text-xs text-center font-medium">{item.label}</span>
+              <span className="text-3xl">{item.icon}</span>
+              <span className="text-[10px] text-center font-medium leading-tight">{item.label}</span>
             </button>
           ))}
+          {isAdmin && (
+            <button
+              onClick={() => navigate("/admin")}
+              className="flex flex-col items-center gap-1 p-2 rounded-xl bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 transition-all shadow-lg relative"
+            >
+              <Shield className="w-7 h-7 text-white" />
+              <span className="text-[10px] text-center font-bold text-white leading-tight">Admin</span>
+            </button>
+          )}
         </div>
 
         {/* Banners */}
