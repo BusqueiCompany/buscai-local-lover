@@ -37,6 +37,7 @@ const defaultCenter = {
 export default function Radar() {
   const navigate = useNavigate();
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   const getRankBadge = (rank: 1 | 2 | 3) => {
     switch (rank) {
@@ -71,48 +72,53 @@ export default function Radar() {
       <main className="max-w-lg mx-auto">
         {/* Google Maps */}
         <div className="relative h-80">
-          <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
-            <GoogleMap
-              mapContainerStyle={mapContainerStyle}
-              center={defaultCenter}
-              zoom={14}
-              options={{
-                zoomControl: true,
-                streetViewControl: false,
-                mapTypeControl: false,
-                fullscreenControl: false,
-              }}
-            >
-              {/* Store Markers */}
-              {mockStores.map((store) => (
+          <LoadScript 
+            googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+            onLoad={() => setIsMapLoaded(true)}
+          >
+            {isMapLoaded && (
+              <GoogleMap
+                mapContainerStyle={mapContainerStyle}
+                center={defaultCenter}
+                zoom={14}
+                options={{
+                  zoomControl: true,
+                  streetViewControl: false,
+                  mapTypeControl: false,
+                  fullscreenControl: false,
+                }}
+              >
+                {/* Store Markers */}
+                {mockStores.map((store) => (
+                  <Marker
+                    key={store.id}
+                    position={{ lat: store.lat, lng: store.lng }}
+                    onClick={() => setSelectedStore(store)}
+                    icon={{
+                      path: google.maps.SymbolPath.CIRCLE,
+                      scale: 10,
+                      fillColor: store.priceRank === 1 ? "#10b981" : store.priceRank === 2 ? "#f59e0b" : "#ef4444",
+                      fillOpacity: 1,
+                      strokeColor: "#ffffff",
+                      strokeWeight: 2,
+                    }}
+                  />
+                ))}
+                
+                {/* User Location Marker */}
                 <Marker
-                  key={store.id}
-                  position={{ lat: store.lat, lng: store.lng }}
-                  onClick={() => setSelectedStore(store)}
+                  position={defaultCenter}
                   icon={{
                     path: google.maps.SymbolPath.CIRCLE,
-                    scale: 10,
-                    fillColor: store.priceRank === 1 ? "#10b981" : store.priceRank === 2 ? "#f59e0b" : "#ef4444",
+                    scale: 8,
+                    fillColor: "#3b82f6",
                     fillOpacity: 1,
                     strokeColor: "#ffffff",
-                    strokeWeight: 2,
+                    strokeWeight: 3,
                   }}
                 />
-              ))}
-              
-              {/* User Location Marker */}
-              <Marker
-                position={defaultCenter}
-                icon={{
-                  path: google.maps.SymbolPath.CIRCLE,
-                  scale: 8,
-                  fillColor: "#3b82f6",
-                  fillOpacity: 1,
-                  strokeColor: "#ffffff",
-                  strokeWeight: 3,
-                }}
-              />
-            </GoogleMap>
+              </GoogleMap>
+            )}
           </LoadScript>
         </div>
 
