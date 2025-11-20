@@ -5,14 +5,16 @@ import {
   Shield, 
   Utensils,
   ChefHat,
-  ShoppingCart,
   PawPrint,
   Wine,
   Pill,
-  Zap,
   MessageCircle,
   Truck,
-  ShoppingBag
+  ShoppingBag,
+  Store,
+  Droplet,
+  Croissant,
+  Handshake
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,23 +31,35 @@ import banner1 from "@/assets/banner-1.png";
 import banner2 from "@/assets/banner-2.png";
 import lanchesIcon from "@/assets/lanches.png";
 import restauranteIcon from "@/assets/restaurante.png";
-import mercadoIcon from "@/assets/mercado.png";
-import petshopIcon from "@/assets/petshop.png";
 import bebidasIcon from "@/assets/bebidas.png";
+import convenienciaIcon from "@/assets/conveniencia.png";
 import farmaciaIcon from "@/assets/farmacia.png";
-import ofertasIcon from "@/assets/ofertas.png";
+import gasAguaIcon from "@/assets/gas-agua.png";
+import padariaIcon from "@/assets/padaria.png";
+import petshopIcon from "@/assets/petshop.png";
+import parceiroIcon from "@/assets/parceiro.png";
+import entregadorIcon from "@/assets/entregador.png";
+import suporteIcon from "@/assets/suporte.png";
 import bazarIcon from "@/assets/bazar.png";
 
 const menuItems = [
-  { icon: Utensils, label: "Lanches", route: "/lanches", locked: false, color: "text-orange-500" },
-  { icon: ChefHat, label: "Restaurantes", route: "/restaurantes", locked: false, color: "text-red-500" },
-  { icon: ShoppingCart, label: "Mercados", route: "/mercados", locked: false, color: "text-green-500" },
-  { icon: PawPrint, label: "Petshops", route: "/petshops", locked: false, color: "text-purple-500" },
+  // Linha 1: Necessidades Básicas
   { icon: Wine, label: "Bebidas", route: "/bebidas", locked: false, color: "text-blue-500" },
+  { icon: Store, label: "Conveniência", route: "/conveniencia", locked: false, color: "text-orange-500" },
   { icon: Pill, label: "Farmácia", route: "/farmacia", locked: false, color: "text-emerald-500" },
-  { icon: Zap, label: "Ofertas", route: "/ofertas", locked: true, color: "text-yellow-500" },
-  { icon: ShoppingBag, label: "Bazar", route: "/bazar", locked: false, color: "text-purple-500" },
+  { icon: Droplet, label: "Gás e Água", route: "/gas-agua", locked: false, color: "text-cyan-500" },
+  
+  // Linha 2: Comida
+  { icon: Utensils, label: "Lanches", route: "/lanches", locked: false, color: "text-orange-500" },
+  { icon: Croissant, label: "Padaria", route: "/padaria", locked: false, color: "text-amber-500" },
+  { icon: ChefHat, label: "Restaurante", route: "/restaurante", locked: false, color: "text-red-500" },
+  { icon: PawPrint, label: "PetShop", route: "/petshop", locked: false, color: "text-purple-500" },
+  
+  // Linha 3: Serviços
+  { icon: Handshake, label: "Parceiro", route: "/parceiro", locked: false, color: "text-blue-600" },
+  { icon: Truck, label: "Entregador", route: "/entregador", locked: false, color: "text-blue-500", special: true },
   { icon: MessageCircle, label: "Suporte", route: "/suporte", locked: false, color: "text-sky-500" },
+  { icon: ShoppingBag, label: "Bazar", route: "/bazar", locked: false, color: "text-purple-500" },
 ];
 
 export default function Home() {
@@ -252,7 +266,9 @@ export default function Home() {
                     navigate(item.route);
                   }
                 }}
-                className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-2xl bg-card hover:bg-accent/5 transition-all relative shadow-sm"
+                className={`flex flex-col items-center gap-1.5 py-2 px-1 rounded-2xl hover:bg-accent/5 transition-all relative ${
+                  item.locked ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+                }`}
               >
                 {item.locked && (
                   <div className="absolute top-1 right-1 bg-accent text-white rounded-full p-0.5">
@@ -263,18 +279,22 @@ export default function Home() {
                 )}
                 {(() => {
                   const iconMap: Record<string, string> = {
-                    "Lanches": lanchesIcon,
-                    "Restaurantes": restauranteIcon,
-                    "Mercados": mercadoIcon,
-                    "Petshops": petshopIcon,
                     "Bebidas": bebidasIcon,
+                    "Conveniência": convenienciaIcon,
                     "Farmácia": farmaciaIcon,
-                    "Ofertas": ofertasIcon,
+                    "Gás e Água": gasAguaIcon,
+                    "Lanches": lanchesIcon,
+                    "Padaria": padariaIcon,
+                    "Restaurante": restauranteIcon,
+                    "PetShop": petshopIcon,
+                    "Parceiro": parceiroIcon,
+                    "Entregador": entregadorIcon,
+                    "Suporte": suporteIcon,
                     "Bazar": bazarIcon,
                   };
                   
                   if (iconMap[item.label]) {
-                    return <img src={iconMap[item.label]} alt={item.label} className="w-14 h-14 object-cover rounded-full" />;
+                    return <img src={iconMap[item.label]} alt={item.label} className="w-16 h-16 object-contain" />;
                   }
                   
                   return <IconComponent className={`w-8 h-8 ${item.color}`} strokeWidth={1.8} />;
@@ -290,15 +310,6 @@ export default function Home() {
             >
               <Shield className="w-8 h-8 text-white" strokeWidth={1.8} />
               <span className="text-[10px] text-center font-bold text-white leading-tight">Admin</span>
-            </button>
-          )}
-          {userRole === "ENTREGADOR" && (
-            <button
-              onClick={() => navigate("/entregador")}
-              className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all shadow-md relative"
-            >
-              <Truck className="w-8 h-8 text-white" strokeWidth={1.8} />
-              <span className="text-[10px] text-center font-bold text-white leading-tight">Entregas</span>
             </button>
           )}
         </div>

@@ -70,18 +70,24 @@ const App = () => (
             {/* Placeholder routes */}
             <Route path="/buscar" element={<Placeholder />} />
             <Route path="/pedido" element={<Placeholder />} />
-            <Route path="/lanches" element={<Placeholder />} />
-            <Route path="/restaurantes" element={<Placeholder />} />
-            <Route path="/mercados" element={<Placeholder />} />
-            <Route path="/petshops" element={<Placeholder />} />
+            
+            {/* Category routes */}
             <Route path="/bebidas" element={<Placeholder />} />
+            <Route path="/conveniencia" element={<Placeholder />} />
             <Route path="/farmacia" element={<Placeholder />} />
+            <Route path="/gas-agua" element={<Placeholder />} />
+            <Route path="/lanches" element={<Placeholder />} />
+            <Route path="/padaria" element={<Placeholder />} />
+            <Route path="/restaurante" element={<Placeholder />} />
+            <Route path="/petshop" element={<Placeholder />} />
+            <Route path="/parceiro" element={<Placeholder />} />
             <Route path="/bazar" element={<Placeholder />} />
+            
+            {/* Other routes */}
             <Route path="/vip" element={<Vip />} />
             <Route path="/suporte" element={<Suporte />} />
             <Route path="/suporte/chat" element={<SuporteChat />} />
             <Route path="/mapa" element={<Mapa />} />
-            <Route path="/parceiros" element={<Placeholder />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
