@@ -138,20 +138,19 @@ export default function Radar() {
   return (
     <div className="min-h-screen pb-20 bg-background">
       {/* Header */}
-      <header className="bg-gradient-primary sticky top-0 z-50 shadow-lg backdrop-blur-md">
+      <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="text-white hover:bg-white/20 transition-all"
             >
-              <ArrowLeft className="h-6 w-6 text-white drop-shadow-md" />
+              <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="text-white">
-              <h1 className="text-2xl font-bold text-white drop-shadow-md">Radar de Preços</h1>
-              <p className="text-xs text-white/90 drop-shadow-sm">{filteredAndSortedStores.length} de {stores.length} comércios</p>
+            <div>
+              <h1 className="text-xl font-bold">Radar de Preços</h1>
+              <p className="text-sm text-muted-foreground">{filteredAndSortedStores.length} de {stores.length} comércios</p>
             </div>
           </div>
         </div>
