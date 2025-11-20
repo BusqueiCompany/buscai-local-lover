@@ -32,6 +32,7 @@ interface Store {
 interface MapRadarProps {
   stores: Store[];
   onStoreClick: (store: Store) => void;
+  onLocationChange?: (coords: { lat: number; lng: number }) => void;
 }
 
 // Ícones customizados
@@ -53,7 +54,7 @@ const storeIcon = L.icon({
   shadowSize: [41, 41]
 });
 
-export default function MapRadar({ stores, onStoreClick }: MapRadarProps) {
+export default function MapRadar({ stores, onStoreClick, onLocationChange }: MapRadarProps) {
   const mapRef = useRef<L.Map | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const storeMarkersRef = useRef<L.Marker[]>([]);
@@ -158,6 +159,9 @@ export default function MapRadar({ stores, onStoreClick }: MapRadarProps) {
     userMarkerRef.current.bindPopup("Você está aqui").openPopup();
 
     mapRef.current?.setView([lat, lng], 15);
+
+    // Notifica a página pai sobre a nova localização
+    onLocationChange?.({ lat, lng });
   }
 
   // Botão "minha localização"
@@ -183,6 +187,9 @@ export default function MapRadar({ stores, onStoreClick }: MapRadarProps) {
       userMarkerRef.current.bindPopup("Você está aqui").openPopup();
 
       mapRef.current?.setView([latitude, longitude], 15);
+
+      // Notifica a página pai sobre a nova localização
+      onLocationChange?.({ lat: latitude, lng: longitude });
     });
   }
 

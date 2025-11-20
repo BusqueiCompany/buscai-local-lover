@@ -32,24 +32,7 @@ export default function Radar() {
 
   useEffect(() => {
     fetchStores();
-    getUserLocation();
   }, []);
-
-  const getUserLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.log("Erro ao obter localização:", error);
-        }
-      );
-    }
-  };
 
   // Calcular distância usando fórmula de Haversine
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -143,8 +126,13 @@ export default function Radar() {
   };
 
   const handleNavigateToStore = (store: Store) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`;
-    window.open(url, '_blank');
+    if (userLocation) {
+      // Abre Google Maps com rota da localização atual até a loja
+      const url = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lng}/${store.latitude},${store.longitude}`;
+      window.open(url, '_blank');
+    } else {
+      toast.error("Clique em 'Minha Localização' no mapa para calcular a rota");
+    }
   };
 
   const handleStoreClick = (store: Store) => {
@@ -183,7 +171,11 @@ export default function Radar() {
           <>
             {/* Mapa com busca e lojas */}
             <div className="px-4 pt-4">
-              <MapRadar stores={filteredAndSortedStores} onStoreClick={handleStoreClick} />
+              <MapRadar 
+                stores={filteredAndSortedStores}
+                onStoreClick={handleStoreClick}
+                onLocationChange={(coords) => setUserLocation(coords)}
+              />
             </div>
 
             {/* Filtros de categoria */}
@@ -333,21 +325,25 @@ export default function Radar() {
               </div>
 
               <div className="flex gap-2 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    if (selectedStore) {
-                      window.open(
-                        `https://www.google.com/maps/search/?api=1&query=${selectedStore.latitude},${selectedStore.longitude}`,
-                        '_blank'
-                      );
-                    }
-                  }}
-                >
-                  <MapPin className="mr-2 h-4 w-4" />
-                  Ver no Mapa
-                </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  if (selectedStore && userLocation) {
+                    // Abre rota com origem e destino
+                    window.open(
+                      `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lng}/${selectedStore.latitude},${selectedStore.longitude}`,
+                      '_blank'
+                    );
+                  } else if (selectedStore) {
+                    // Sem localização - pede para clicar em Minha Localização
+                    toast.error("Clique em 'Minha Localização' no mapa para ver a rota");
+                  }
+                }}
+              >
+                <MapPin className="mr-2 h-4 w-4" />
+                Ver Rota
+              </Button>
 
                 <Button
                   className="flex-1"
