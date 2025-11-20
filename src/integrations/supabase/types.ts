@@ -102,6 +102,10 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           nome: string
+          notas_admin: string | null
+          serial: string | null
+          slug: string | null
+          status: string | null
           telefone: string | null
           updated_at: string
         }
@@ -116,6 +120,10 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           nome: string
+          notas_admin?: string | null
+          serial?: string | null
+          slug?: string | null
+          status?: string | null
           telefone?: string | null
           updated_at?: string
         }
@@ -130,6 +138,10 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           nome?: string
+          notas_admin?: string | null
+          serial?: string | null
+          slug?: string | null
+          status?: string | null
           telefone?: string | null
           updated_at?: string
         }
@@ -290,6 +302,8 @@ export type Database = {
           id: string
           imagem_url: string | null
           nome: string
+          sku: string | null
+          unit: string | null
           updated_at: string
         }
         Insert: {
@@ -298,6 +312,8 @@ export type Database = {
           id?: string
           imagem_url?: string | null
           nome: string
+          sku?: string | null
+          unit?: string | null
           updated_at?: string
         }
         Update: {
@@ -306,6 +322,8 @@ export type Database = {
           id?: string
           imagem_url?: string | null
           nome?: string
+          sku?: string | null
+          unit?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -327,6 +345,7 @@ export type Database = {
           preco_atual: number
           produto_id: string
           promocao_percentual: number | null
+          quantity: number | null
           updated_at: string
         }
         Insert: {
@@ -337,6 +356,7 @@ export type Database = {
           preco_atual: number
           produto_id: string
           promocao_percentual?: number | null
+          quantity?: number | null
           updated_at?: string
         }
         Update: {
@@ -347,6 +367,7 @@ export type Database = {
           preco_atual?: number
           produto_id?: string
           promocao_percentual?: number | null
+          quantity?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -443,6 +464,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_slug: { Args: { nome: string }; Returns: string }
+      generate_store_serial: { Args: never; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

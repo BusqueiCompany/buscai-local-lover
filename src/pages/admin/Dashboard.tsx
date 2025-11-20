@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Store, Package, DollarSign, Users, ArrowLeft } from "lucide-react";
+import { Store, Package, Upload, Code, Settings, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminDashboard() {
@@ -19,53 +19,39 @@ export default function AdminDashboard() {
 
   const menuItems = [
     {
-      title: "Users",
-      description: "Gerenciar níveis e permissões de usuários",
-      icon: Users,
-      path: "/admin/users",
-      color: "bg-[#1976D2] hover:bg-[#1565C0]",
-    },
-    {
-      title: "Seeds",
-      description: "Visualizar e editar dados completos dos usuários",
-      icon: Users,
-      path: "/admin/seeds",
-      color: "bg-[#FF7A00] hover:bg-[#E66A00]",
-    },
-    {
-      title: "Markets Importer",
-      description: "Importar lojas via arquivo .txt",
-      icon: Store,
-      path: "/admin/importar-lojas",
-      color: "bg-[#1976D2] hover:bg-[#1565C0]",
-    },
-    {
-      title: "Gerenciar Lojas",
-      description: "Cadastrar, editar e ativar/desativar lojas",
+      title: "Lojas",
+      description: "Gerenciar lojas: criar, editar, excluir e publicar",
       icon: Store,
       path: "/admin/lojas",
-      color: "bg-[#FF7A00] hover:bg-[#E66A00]",
+      color: "bg-primary hover:bg-primary/90",
     },
     {
-      title: "Gerenciar Produtos",
-      description: "Adicionar e editar produtos do sistema",
+      title: "Lojas Code",
+      description: "Visualizar IDs e Serials de todas as lojas",
+      icon: Code,
+      path: "/admin/lojas-code",
+      color: "bg-secondary hover:bg-secondary/90",
+    },
+    {
+      title: "Produtos",
+      description: "Gerenciar produtos das lojas",
       icon: Package,
       path: "/admin/produtos",
-      color: "bg-[#1976D2] hover:bg-[#1565C0]",
+      color: "bg-accent hover:bg-accent/90",
     },
     {
-      title: "Atualizar Preços",
-      description: "Gerenciar preços e promoções",
-      icon: DollarSign,
-      path: "/admin/precos",
-      color: "bg-[#FF7A00] hover:bg-[#E66A00]",
+      title: "Importações",
+      description: "Importar lojas e produtos em lote",
+      icon: Upload,
+      path: "/admin/importacoes",
+      color: "bg-primary hover:bg-primary/90",
     },
     {
-      title: "Gerenciar Pedidos",
-      description: "Ver pedidos de entregadores e ajustar parâmetros",
-      icon: Package,
-      path: "/admin/pedidos",
-      color: "bg-[#1976D2] hover:bg-[#1565C0]",
+      title: "Configurações",
+      description: "Configurações gerais do sistema",
+      icon: Settings,
+      path: "/admin/configuracoes",
+      color: "bg-secondary hover:bg-secondary/90",
     },
   ];
 
@@ -91,11 +77,11 @@ export default function AdminDashboard() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-foreground">Painel Administrativo</h1>
-            <p className="text-muted-foreground">Gerencie todos os aspectos do sistema</p>
+            <p className="text-muted-foreground">PWA BUSQUEI - Gerenciamento Completo</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {menuItems.map((item) => (
             <Card
               key={item.path}
@@ -104,7 +90,7 @@ export default function AdminDashboard() {
             >
               <CardHeader>
                 <div className={`w-16 h-16 rounded-lg ${item.color} flex items-center justify-center mb-4`}>
-                  <item.icon className="h-8 w-8 text-white" />
+                  <item.icon className="h-8 w-8 text-primary-foreground" />
                 </div>
                 <CardTitle className="text-xl">{item.title}</CardTitle>
               </CardHeader>
