@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageSquare, Ticket, Users, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,9 +6,135 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { BottomNav } from "@/components/ui/bottom-nav";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+interface SupportTicket {
+  id: string;
+  subject: string;
+  description: string;
+  status: string;
+  priority: string;
+  created_at: string;
+  resolved_at: string | null;
+}
+
 export default function Suporte() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("chat");
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    subject: "",
+    description: "",
+    priority: "normal"
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchTickets();
+    }
+  }, [user]);
+
+  const fetchTickets = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("support_tickets")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setTickets(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar tickets:", error);
+      toast.error("Erro ao carregar tickets");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast.error("Você precisa estar logado");
+      return;
+    }
+
+    if (!formData.subject.trim() || !formData.description.trim()) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("support_tickets")
+        .insert({
+          user_id: user.id,
+          subject: formData.subject,
+          description: formData.description,
+          priority: formData.priority
+        });
+
+      if (error) throw error;
+
+      toast.success("Ticket criado com sucesso! Responderemos em até 48h.");
+      setFormData({ subject: "", description: "", priority: "normal" });
+      setIsDialogOpen(false);
+      fetchTickets();
+    } catch (error) {
+      console.error("Erro ao criar ticket:", error);
+      toast.error("Erro ao criar ticket");
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "aberto":
+        return "border-l-yellow-500";
+      case "em_andamento":
+        return "border-l-blue-500";
+      case "resolvido":
+        return "border-l-green-500";
+      default:
+        return "border-l-gray-500";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "aberto":
+        return "Aberto";
+      case "em_andamento":
+        return "Em Andamento";
+      case "resolvido":
+        return "Resolvido";
+      default:
+        return status;
+    }
+  };
+
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case "aberto":
+        return "bg-yellow-500/10 text-yellow-700 border-yellow-500/20";
+      case "em_andamento":
+        return "bg-blue-500/10 text-blue-700 border-blue-500/20";
+      case "resolvido":
+        return "bg-green-500/10 text-green-700 border-green-500/20";
+      default:
+        return "bg-gray-500/10 text-gray-700 border-gray-500/20";
+    }
+  };
   return <div className="min-h-screen pb-20 bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-40">
@@ -100,49 +226,112 @@ export default function Suporte() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button className="w-full" size="lg">
-                  <Ticket className="h-5 w-5 mr-2" />
-                  Abrir Novo Ticket
-                </Button>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full" size="lg">
+                      <Ticket className="h-5 w-5 mr-2" />
+                      Abrir Novo Ticket
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>Abrir Chamado Urgente</DialogTitle>
+                      <DialogDescription>
+                        Nossa equipe responderá em até 48 horas
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="subject">Assunto</Label>
+                        <Input
+                          id="subject"
+                          placeholder="Descreva o problema brevemente"
+                          value={formData.subject}
+                          onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="description">Descrição</Label>
+                        <Textarea
+                          id="description"
+                          placeholder="Descreva o problema em detalhes"
+                          value={formData.description}
+                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          rows={5}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="priority">Prioridade</Label>
+                        <Select
+                          value={formData.priority}
+                          onValueChange={(value) => setFormData({ ...formData, priority: value })}
+                        >
+                          <SelectTrigger id="priority">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="baixa">Baixa</SelectItem>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="alta">Alta</SelectItem>
+                            <SelectItem value="urgente">Urgente</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <Button type="submit" className="w-full">
+                        Criar Ticket
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
 
                 <div className="space-y-3 mt-6">
                   <p className="text-sm font-medium text-muted-foreground">Tickets Recentes</p>
                   
-                  <Card className="border-l-4 border-l-yellow-500">
-                    <CardContent className="pt-4">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 border-yellow-500/20">
-                              Em Andamento
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">#1234</span>
+                  {loading ? (
+                    <p className="text-center text-muted-foreground py-8">Carregando...</p>
+                  ) : tickets.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      Nenhum ticket criado ainda
+                    </p>
+                  ) : (
+                    tickets.map((ticket) => (
+                      <Card key={ticket.id} className={`border-l-4 ${getStatusColor(ticket.status)}`}>
+                        <CardContent className="pt-4">
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className={getStatusBadgeColor(ticket.status)}>
+                                  {getStatusLabel(ticket.status)}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  #{ticket.id.slice(0, 8)}
+                                </span>
+                              </div>
+                              <p className="font-medium">{ticket.subject}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {ticket.resolved_at 
+                                  ? `Resolvido ${formatDistanceToNow(new Date(ticket.resolved_at), { 
+                                      addSuffix: true, 
+                                      locale: ptBR 
+                                    })}`
+                                  : `Aberto ${formatDistanceToNow(new Date(ticket.created_at), { 
+                                      addSuffix: true, 
+                                      locale: ptBR 
+                                    })}`
+                                }
+                              </p>
+                            </div>
+                            <Button variant="outline" size="sm">Ver Detalhes</Button>
                           </div>
-                          <p className="font-medium">Problema com pagamento</p>
-                          <p className="text-sm text-muted-foreground">Aberto há 2 dias</p>
-                        </div>
-                        <Button variant="outline" size="sm">Ver Detalhes</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-l-4 border-l-green-500">
-                    <CardContent className="pt-4">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="bg-green-500/10 text-green-700 border-green-500/20">
-                              Resolvido
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">#1233</span>
-                          </div>
-                          <p className="font-medium">Dúvida sobre entrega</p>
-                          <p className="text-sm text-muted-foreground">Resolvido há 5 dias</p>
-                        </div>
-                        <Button variant="outline" size="sm">Ver Detalhes</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
