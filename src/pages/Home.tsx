@@ -26,6 +26,7 @@ import { AddressSelector } from "@/components/AddressSelector";
 import { NotificationBell } from "@/components/NotificationBell";
 import banner1 from "@/assets/banner-1.png";
 import banner2 from "@/assets/banner-2.png";
+import lanchesIcon from "@/assets/lanches.png";
 
 const menuItems = [
   { icon: Utensils, label: "Lanches", route: "/lanches", locked: false, color: "text-orange-500" },
@@ -251,7 +252,11 @@ export default function Home() {
                     </svg>
                   </div>
                 )}
-                <IconComponent className={`w-8 h-8 ${item.color}`} strokeWidth={1.8} />
+                {item.label === "Lanches" ? (
+                  <img src={lanchesIcon} alt="Lanches" className="w-8 h-8 object-cover rounded-full" />
+                ) : (
+                  <IconComponent className={`w-8 h-8 ${item.color}`} strokeWidth={1.8} />
+                )}
                 <span className="text-[10px] text-center font-medium leading-tight text-foreground">{item.label}</span>
               </button>
             );
