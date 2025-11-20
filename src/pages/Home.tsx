@@ -3,13 +3,13 @@ import {
   MapPin, 
   Sparkles, 
   Shield, 
-  Pizza, 
-  Store, 
-  ShoppingBag, 
-  Heart, 
-  Coffee, 
-  Cross, 
-  Tag, 
+  Utensils,
+  ChefHat,
+  ShoppingCart,
+  PawPrint,
+  Wine,
+  Pill,
+  Zap,
   MessageCircle,
   Truck
 } from "lucide-react";
@@ -28,14 +28,14 @@ import banner1 from "@/assets/banner-1.png";
 import banner2 from "@/assets/banner-2.png";
 
 const menuItems = [
-  { icon: Pizza, label: "Lanches", route: "/lanches", locked: true },
-  { icon: Store, label: "Restaurantes", route: "/restaurantes", locked: true },
-  { icon: ShoppingBag, label: "Mercados", route: "/mercados", locked: true },
-  { icon: Heart, label: "Petshops", route: "/petshops", locked: true },
-  { icon: Coffee, label: "Bebidas", route: "/bebidas", locked: true },
-  { icon: Cross, label: "Farmácia", route: "/farmacia", locked: true },
-  { icon: Tag, label: "Ofertas", route: "/ofertas", locked: true },
-  { icon: MessageCircle, label: "Suporte", route: "/suporte", locked: false },
+  { icon: Utensils, label: "Lanches", route: "/lanches", locked: false, color: "text-orange-500" },
+  { icon: ChefHat, label: "Restaurantes", route: "/restaurantes", locked: false, color: "text-red-500" },
+  { icon: ShoppingCart, label: "Mercados", route: "/mercados", locked: false, color: "text-green-500" },
+  { icon: PawPrint, label: "Petshops", route: "/petshops", locked: false, color: "text-purple-500" },
+  { icon: Wine, label: "Bebidas", route: "/bebidas", locked: false, color: "text-blue-500" },
+  { icon: Pill, label: "Farmácia", route: "/farmacia", locked: false, color: "text-emerald-500" },
+  { icon: Zap, label: "Ofertas", route: "/ofertas", locked: true, color: "text-yellow-500" },
+  { icon: MessageCircle, label: "Suporte", route: "/suporte", locked: false, color: "text-sky-500" },
 ];
 
 export default function Home() {
@@ -251,7 +251,7 @@ export default function Home() {
                     </svg>
                   </div>
                 )}
-                <IconComponent className="w-8 h-8 text-primary" strokeWidth={1.8} />
+                <IconComponent className={`w-8 h-8 ${item.color}`} strokeWidth={1.8} />
                 <span className="text-[10px] text-center font-medium leading-tight text-foreground">{item.label}</span>
               </button>
             );
@@ -304,7 +304,7 @@ export default function Home() {
             variant="outline"
             className="w-full h-14 text-lg font-bold border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
           >
-            📍 Radar de Preços
+            📍 Mapa de Lojas
           </Button>
         </div>
       </main>
