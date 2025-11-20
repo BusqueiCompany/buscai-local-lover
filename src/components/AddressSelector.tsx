@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, MapPin, Trash2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -144,49 +143,49 @@ export function AddressSelector({ isOpen, onClose, onAddressChange }: AddressSel
 
   return (
     <>
-      <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side="bottom" className="h-[80vh]">
-          <SheetHeader>
-            <SheetTitle>Meus Endereços</SheetTitle>
-          </SheetHeader>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-md max-h-[70vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Meus Endereços</DialogTitle>
+          </DialogHeader>
 
-          <div className="mt-6 space-y-3">
+          <div className="space-y-3">
             {/* Botão Adicionar Novo */}
             <Button
               variant="outline"
-              className="w-full justify-start gap-2 h-auto py-4"
+              className="w-full justify-start gap-2 py-3"
               onClick={() => setIsAddDialogOpen(true)}
             >
-              <Plus className="h-5 w-5 text-primary" />
-              <span className="font-medium">Adicionar novo endereço</span>
+              <Plus className="h-4 w-4 text-primary" />
+              <span className="text-sm">Adicionar novo endereço</span>
             </Button>
 
             {/* Lista de Endereços */}
             {addresses.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>Nenhum endereço cadastrado</p>
+              <div className="text-center py-6 text-muted-foreground">
+                <MapPin className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Nenhum endereço cadastrado</p>
               </div>
             ) : (
               addresses.map((address) => (
                 <div
                   key={address.id}
-                  className={`border rounded-lg p-4 relative ${
+                  className={`border rounded-lg p-3 relative ${
                     address.is_active ? "border-primary bg-primary/5" : "border-border"
                   }`}
                 >
                   {address.is_active && (
                     <div className="absolute top-2 right-2">
-                      <Check className="h-5 w-5 text-primary" />
+                      <Check className="h-4 w-4 text-primary" />
                     </div>
                   )}
                   
-                  <div className="pr-8">
+                  <div className="pr-6">
                     <div className="flex items-start gap-2 mb-2">
-                      <MapPin className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                      <MapPin className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
-                        <p className="font-semibold text-sm">{address.nome}</p>
-                        <p className="text-sm text-foreground">
+                        <p className="font-medium text-sm">{address.nome}</p>
+                        <p className="text-xs text-foreground">
                           {address.endereco}, {address.numero}
                         </p>
                         {address.complemento && (
@@ -194,7 +193,7 @@ export function AddressSelector({ isOpen, onClose, onAddressChange }: AddressSel
                             Complemento: {address.complemento}
                           </p>
                         )}
-                        <p className="text-sm text-muted-foreground">{address.bairro}</p>
+                        <p className="text-xs text-muted-foreground">{address.bairro}</p>
                         {address.referencia && (
                           <p className="text-xs text-muted-foreground">
                             Ref: {address.referencia}
@@ -203,12 +202,12 @@ export function AddressSelector({ isOpen, onClose, onAddressChange }: AddressSel
                       </div>
                     </div>
 
-                    <div className="flex gap-2 mt-3">
+                    <div className="flex gap-2 mt-2">
                       {!address.is_active && (
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 h-8 text-xs"
                           onClick={() => handleSelectAddress(address.id)}
                           disabled={loading}
                         >
@@ -218,10 +217,10 @@ export function AddressSelector({ isOpen, onClose, onAddressChange }: AddressSel
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive h-8 px-2"
                         onClick={() => handleDeleteAddress(address.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </div>
@@ -229,8 +228,8 @@ export function AddressSelector({ isOpen, onClose, onAddressChange }: AddressSel
               ))
             )}
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog para Adicionar Novo Endereço */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
