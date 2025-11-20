@@ -27,7 +27,7 @@ import GerenciarProdutos from "./pages/admin/GerenciarProdutos";
 import AtualizarPrecos from "./pages/admin/AtualizarPrecos";
 import GerenciarPedidos from "./pages/admin/GerenciarPedidos";
 import Entregadores from "./pages/admin/Entregadores";
-import SuporteAdmin from "./pages/admin/Suporte";
+import SuporteAdmin from "./pages/admin/SuporteAdmin";
 import Logs from "./pages/admin/Logs";
 import PainelEntregador from "./pages/PainelEntregador";
 import NotFound from "./pages/NotFound";
