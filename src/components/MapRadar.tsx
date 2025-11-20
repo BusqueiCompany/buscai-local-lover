@@ -1,13 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MapPin } from "lucide-react";
-
-// Photon API endpoint (autocomplete gratuito)
-const PHOTON_URL =
-  "https://photon.komoot.io/api/?limit=5&bbox=-44.0,-23.4,-40.8,-21.0&q=";
+import { MapPin, Info, MapPinned, MousePointerClick } from "lucide-react";
 
 // Limites aproximados Estado do RJ
 const RJ_BOUNDS = L.latLngBounds(
@@ -63,8 +58,6 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
   const watchIdRef = useRef<number | null>(null);
   const selectedStoreRef = useRef<Store | null>(null);
 
-  const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isTracking, setIsTracking] = useState(false);
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
 
@@ -315,49 +308,6 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
     return () => window.removeEventListener('start-route', handleStartRoute);
   }, []);
 
-  // Autocomplete (Photon API)
-  async function search(text: string) {
-    setQuery(text);
-
-    if (text.length < 3) {
-      setSuggestions([]);
-      return;
-    }
-
-    try {
-      const url = PHOTON_URL + encodeURIComponent(text);
-      const res = await fetch(url);
-      const json = await res.json();
-      setSuggestions(json.features || []);
-    } catch (err) {
-      console.error("Erro no autocomplete:", err);
-    }
-  }
-
-  function selectSuggestion(item: any) {
-    const [lng, lat] = item.geometry.coordinates;
-
-    setQuery(item.properties.name || "");
-    setSuggestions([]);
-
-    // Remove marcador anterior do usuário
-    if (userMarkerRef.current) {
-      userMarkerRef.current.remove();
-    }
-
-    // Adiciona novo marcador do usuário
-    userMarkerRef.current = L.marker([lat, lng], { 
-      icon: userIcon 
-    }).addTo(mapRef.current!);
-    
-    userMarkerRef.current.bindPopup("Você está aqui").openPopup();
-
-    mapRef.current?.setView([lat, lng], 15);
-
-    // Notifica a página pai sobre a nova localização
-    onLocationChange?.({ lat, lng });
-  }
-
   // Botão "minha localização"
   function goToMyLocation() {
     if (!navigator.geolocation) {
@@ -389,35 +339,46 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
 
   return (
     <div className="w-full flex flex-col gap-3 bg-background rounded-lg relative z-10">
-      {/* Campo de busca */}
-      <div className="relative">
-        <Input
-          type="text"
-          value={query}
-          onChange={(e) => search(e.target.value)}
-          placeholder="Buscar endereço…"
-          className="w-full"
-        />
+      {/* Caixa de Instruções */}
+      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-2 border-primary/20 rounded-xl p-5 shadow-lg">
+        <div className="flex items-center gap-2 mb-4">
+          <Info className="h-5 w-5 text-primary" />
+          <h3 className="font-bold text-lg text-foreground">Como usar o Mapa</h3>
+        </div>
         
-        {/* Sugestões */}
-        {suggestions.length > 0 && (
-          <div className="absolute z-40 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
-            {suggestions.map((item, idx) => (
-              <button
-                key={idx}
-                onClick={() => selectSuggestion(item)}
-                className="w-full text-left px-4 py-2 hover:bg-accent transition-colors border-b border-border last:border-b-0"
-              >
-                <div className="font-medium text-sm text-foreground">
-                  {item.properties.name}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {item.properties.street}, {item.properties.city}
-                </div>
-              </button>
-            ))}
+        <div className="space-y-4">
+          {/* Passo 1 */}
+          <div className="flex gap-3 items-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+              1
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <MapPinned className="h-4 w-4 text-primary" />
+                <p className="font-semibold text-foreground">Ative sua localização</p>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Clique no botão <span className="font-medium text-foreground">"Minha Localização"</span> abaixo do mapa para centralizar no seu endereço e calcular rotas.
+              </p>
+            </div>
           </div>
-        )}
+
+          {/* Passo 2 */}
+          <div className="flex gap-3 items-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+              2
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <MousePointerClick className="h-4 w-4 text-primary" />
+                <p className="font-semibold text-foreground">Selecione uma loja</p>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Toque em qualquer <span className="font-medium text-foreground">marcador no mapa</span> ou na <span className="font-medium text-foreground">lista abaixo</span> para ver detalhes do estabelecimento e traçar a rota até lá.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Botões de controle */}
