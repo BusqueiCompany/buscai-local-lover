@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useRole } from "@/hooks/useRole";
 
 interface Message {
   id: string;
@@ -17,6 +18,7 @@ interface Message {
 export default function SuporteChat() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useRole();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -112,7 +114,7 @@ export default function SuporteChat() {
             </Avatar>
             <div>
               <h1 className="text-lg font-bold">Alex - Suporte</h1>
-              <p className="text-xs text-purple-500 font-medium">LVL 500</p>
+              {isAdmin && <p className="text-xs text-purple-500 font-medium">LVL 500</p>}
             </div>
           </div>
         </div>
