@@ -3,9 +3,9 @@ import { BottomNav } from "@/components/ui/bottom-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Navigation, Store, MapPin } from "lucide-react";
+import { ArrowLeft, Store, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import MapLeafletComponent from "@/components/MapLeaflet";
 
 interface Store {
   id: number;
@@ -24,20 +24,10 @@ const mockStores: Store[] = [
   { id: 4, name: "Petshop Amigo", type: "Petshop", distance: "1.5 km", priceRank: 3, lat: -22.8804, lng: -43.5983 },
 ];
 
-const mapContainerStyle = {
-  width: "100%",
-  height: "100%",
-};
-
-const defaultCenter = {
-  lat: -22.8784,
-  lng: -43.5963,
-};
-
 export default function Radar() {
   const navigate = useNavigate();
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [mapCenter, setMapCenter] = useState({ lat: -22.8784, lng: -43.5963 });
 
   const getRankBadge = (rank: 1 | 2 | 3) => {
     switch (rank) {
@@ -70,56 +60,13 @@ export default function Radar() {
       </header>
 
       <main className="max-w-lg mx-auto">
-        {/* Google Maps */}
-        <div className="relative h-80">
-          <LoadScript 
-            googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-            onLoad={() => setIsMapLoaded(true)}
-          >
-            {isMapLoaded && (
-              <GoogleMap
-                mapContainerStyle={mapContainerStyle}
-                center={defaultCenter}
-                zoom={14}
-                options={{
-                  zoomControl: true,
-                  streetViewControl: false,
-                  mapTypeControl: false,
-                  fullscreenControl: false,
-                }}
-              >
-                {/* Store Markers */}
-                {mockStores.map((store) => (
-                  <Marker
-                    key={store.id}
-                    position={{ lat: store.lat, lng: store.lng }}
-                    onClick={() => setSelectedStore(store)}
-                    icon={{
-                      path: google.maps.SymbolPath.CIRCLE,
-                      scale: 10,
-                      fillColor: store.priceRank === 1 ? "#10b981" : store.priceRank === 2 ? "#f59e0b" : "#ef4444",
-                      fillOpacity: 1,
-                      strokeColor: "#ffffff",
-                      strokeWeight: 2,
-                    }}
-                  />
-                ))}
-                
-                {/* User Location Marker */}
-                <Marker
-                  position={defaultCenter}
-                  icon={{
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 8,
-                    fillColor: "#3b82f6",
-                    fillOpacity: 1,
-                    strokeColor: "#ffffff",
-                    strokeWeight: 3,
-                  }}
-                />
-              </GoogleMap>
-            )}
-          </LoadScript>
+        {/* Leaflet Map */}
+        <div className="relative h-80 px-6 py-4">
+          <MapLeafletComponent 
+            lat={mapCenter.lat}
+            lng={mapCenter.lng}
+            onChange={(coords) => setMapCenter(coords)}
+          />
         </div>
 
         {/* Stores List */}
