@@ -35,7 +35,7 @@ const menuItems = [
   { icon: Coffee, label: "Bebidas", route: "/bebidas", locked: true },
   { icon: Cross, label: "Farmácia", route: "/farmacia", locked: true },
   { icon: Tag, label: "Ofertas", route: "/ofertas", locked: true },
-  { icon: MessageCircle, label: "Suporte", route: "/suporte", locked: true },
+  { icon: MessageCircle, label: "Suporte", route: "/suporte", locked: false },
 ];
 
 export default function Home() {

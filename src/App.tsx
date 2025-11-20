@@ -13,6 +13,7 @@ import Configuracoes from "./pages/Configuracoes";
 import Placeholder from "./pages/Placeholder";
 import Vip from "./pages/Vip";
 import Suporte from "./pages/Suporte";
+import SuporteChat from "./pages/SuporteChat";
 import AdminDashboard from "./pages/admin/Dashboard";
 import LojasCode from "./pages/admin/LojasCode";
 import Importacoes from "./pages/admin/Importacoes";
@@ -76,6 +77,7 @@ const App = () => (
             <Route path="/farmacia" element={<Placeholder />} />
             <Route path="/vip" element={<Vip />} />
             <Route path="/suporte" element={<Suporte />} />
+            <Route path="/suporte/chat" element={<SuporteChat />} />
             <Route path="/parceiros" element={<Placeholder />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
