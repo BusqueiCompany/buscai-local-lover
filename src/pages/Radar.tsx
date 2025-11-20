@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import MapRadar from "@/components/MapRadar";
 
 interface Store {
   id: string;
@@ -105,6 +106,11 @@ export default function Radar() {
           </div>
         ) : (
           <>
+            {/* Mapa com busca e lojas */}
+            <div className="px-4 pt-4">
+              <MapRadar stores={stores} onStoreClick={handleStoreClick} />
+            </div>
+
             {/* Stores List */}
             <div className="px-4 py-4 space-y-3">
               <h2 className="font-bold text-lg flex items-center gap-2 mb-4 text-foreground">
