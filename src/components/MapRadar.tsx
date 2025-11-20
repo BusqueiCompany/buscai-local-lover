@@ -59,9 +59,13 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
   const userMarkerRef = useRef<L.Marker | null>(null);
   const storeMarkersRef = useRef<L.Marker[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const routeLineRef = useRef<L.Polyline | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+  const selectedStoreRef = useRef<Store | null>(null);
 
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isTracking, setIsTracking] = useState(false);
 
   // Inicializar mapa
   useEffect(() => {
@@ -84,6 +88,100 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
     };
   }, []);
 
+  // Função para desenhar rota
+  const drawRoute = (userLat: number, userLng: number, storeLat: number, storeLng: number) => {
+    if (!mapRef.current) return;
+
+    // Remove linha anterior
+    if (routeLineRef.current) {
+      routeLineRef.current.remove();
+    }
+
+    // Desenha nova linha vermelha
+    routeLineRef.current = L.polyline(
+      [[userLat, userLng], [storeLat, storeLng]],
+      {
+        color: 'red',
+        weight: 4,
+        opacity: 0.7,
+        dashArray: '10, 10'
+      }
+    ).addTo(mapRef.current);
+
+    // Ajusta o zoom para mostrar toda a rota
+    mapRef.current.fitBounds(routeLineRef.current.getBounds(), { padding: [50, 50] });
+  };
+
+  // Função para iniciar rastreamento em tempo real
+  const startTracking = (store: Store) => {
+    if (!navigator.geolocation) {
+      alert("Geolocalização não suportada");
+      return;
+    }
+
+    selectedStoreRef.current = store;
+    setIsTracking(true);
+
+    // Rastrear posição em tempo real (atualiza a cada movimento)
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // Atualizar marcador do usuário
+        if (userMarkerRef.current) {
+          userMarkerRef.current.setLatLng([latitude, longitude]);
+        } else {
+          userMarkerRef.current = L.marker([latitude, longitude], { 
+            icon: userIcon 
+          }).addTo(mapRef.current!);
+        }
+
+        userMarkerRef.current.bindPopup("Você está aqui").openPopup();
+
+        // Notificar mudança de localização
+        onLocationChange?.({ lat: latitude, lng: longitude });
+
+        // Desenhar/atualizar rota
+        if (selectedStoreRef.current) {
+          drawRoute(latitude, longitude, selectedStoreRef.current.latitude, selectedStoreRef.current.longitude);
+        }
+      },
+      (error) => {
+        console.error("Erro ao rastrear localização:", error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
+  };
+
+  // Função para parar rastreamento
+  const stopTracking = () => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    
+    if (routeLineRef.current) {
+      routeLineRef.current.remove();
+      routeLineRef.current = null;
+    }
+    
+    selectedStoreRef.current = null;
+    setIsTracking(false);
+  };
+
+  // Limpar rastreamento ao desmontar
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
+
   // Adicionar marcadores das lojas
   useEffect(() => {
     if (!mapRef.current) return;
@@ -101,7 +199,13 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
       marker.bindPopup(`
         <div style="text-align: center;">
           <strong>${store.nome}</strong><br/>
-          <small>${store.categoria || 'Loja'}</small>
+          <small>${store.categoria || 'Loja'}</small><br/>
+          <button 
+            onclick="window.dispatchEvent(new CustomEvent('start-route', { detail: ${JSON.stringify(store)} }))"
+            style="margin-top: 8px; padding: 4px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;"
+          >
+            Iniciar Rota
+          </button>
         </div>
       `);
 
@@ -113,13 +217,24 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
     });
 
     // Ajustar mapa para mostrar todas as lojas
-    if (stores.length > 0) {
+    if (stores.length > 0 && !isTracking) {
       const bounds = L.latLngBounds(
         stores.map(s => [s.latitude, s.longitude] as [number, number])
       );
       mapRef.current.fitBounds(bounds, { padding: [50, 50] });
     }
-  }, [stores, onStoreClick]);
+  }, [stores, onStoreClick, isTracking]);
+
+  // Listener para evento customizado do botão no popup
+  useEffect(() => {
+    const handleStartRoute = (e: any) => {
+      const store = e.detail;
+      startTracking(store);
+    };
+
+    window.addEventListener('start-route', handleStartRoute);
+    return () => window.removeEventListener('start-route', handleStartRoute);
+  }, []);
 
   // Autocomplete (Photon API)
   async function search(text: string) {
@@ -226,15 +341,28 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
         )}
       </div>
 
-      {/* Botão minha localização */}
-      <Button
-        onClick={goToMyLocation}
-        variant="outline"
-        className="w-full"
-      >
-        <MapPin className="mr-2 h-4 w-4" />
-        Minha Localização
-      </Button>
+      {/* Botões de controle */}
+      <div className="flex gap-2">
+        <Button
+          onClick={goToMyLocation}
+          variant="outline"
+          className="flex-1"
+          disabled={isTracking}
+        >
+          <MapPin className="mr-2 h-4 w-4" />
+          Minha Localização
+        </Button>
+
+        {isTracking && (
+          <Button
+            onClick={stopTracking}
+            variant="destructive"
+            className="flex-1"
+          >
+            Parar Rota
+          </Button>
+        )}
+      </div>
 
       {/* Mapa */}
       <div
