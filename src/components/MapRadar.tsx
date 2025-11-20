@@ -152,6 +152,12 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
       return;
     }
 
+    // Limpar rastreamento anterior se existir
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+
     selectedStoreRef.current = store;
     setIsTracking(true);
 
@@ -178,43 +184,54 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
 
         // Notificar mudança de localização
         onLocationChange?.({ lat: latitude, lng: longitude });
+
+        // Depois de desenhar a rota inicial, iniciar rastreamento em tempo real
+        watchIdRef.current = navigator.geolocation.watchPosition(
+          async (pos) => {
+            const { latitude: lat, longitude: lng } = pos.coords;
+
+            // Atualizar marcador do usuário
+            if (userMarkerRef.current) {
+              userMarkerRef.current.setLatLng([lat, lng]);
+            }
+
+            // Desenhar/atualizar rota seguindo as ruas
+            if (selectedStoreRef.current) {
+              await drawRoute(lat, lng, selectedStoreRef.current.latitude, selectedStoreRef.current.longitude);
+            }
+
+            // Notificar mudança de localização
+            onLocationChange?.({ lat, lng });
+          },
+          (error) => {
+            console.error("Erro ao rastrear localização:", error);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 2000
+          }
+        );
       },
       (error) => {
         console.error("Erro ao obter localização inicial:", error);
-        alert("Não foi possível obter sua localização. Verifique as permissões.");
+        setIsTracking(false);
+        selectedStoreRef.current = null;
+        
+        let errorMsg = "Não foi possível obter sua localização. ";
+        if (error.code === 1) {
+          errorMsg += "Permissão negada. Verifique as configurações do navegador.";
+        } else if (error.code === 2) {
+          errorMsg += "Posição indisponível.";
+        } else if (error.code === 3) {
+          errorMsg += "Tempo esgotado. Tente novamente.";
+        }
+        alert(errorMsg);
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 15000,
         maximumAge: 0
-      }
-    );
-
-    // Depois, iniciar rastreamento em tempo real
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-
-        // Atualizar marcador do usuário
-        if (userMarkerRef.current) {
-          userMarkerRef.current.setLatLng([latitude, longitude]);
-        }
-
-        // Desenhar/atualizar rota seguindo as ruas
-        if (selectedStoreRef.current) {
-          await drawRoute(latitude, longitude, selectedStoreRef.current.latitude, selectedStoreRef.current.longitude);
-        }
-
-        // Notificar mudança de localização
-        onLocationChange?.({ lat: latitude, lng: longitude });
-      },
-      (error) => {
-        console.error("Erro ao rastrear localização:", error);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 2000
       }
     );
   };
