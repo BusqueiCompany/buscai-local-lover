@@ -66,6 +66,7 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isTracking, setIsTracking] = useState(false);
+  const [isLoadingRoute, setIsLoadingRoute] = useState(false);
 
   // Inicializar mapa
   useEffect(() => {
@@ -88,28 +89,60 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
     };
   }, []);
 
+  // Função para buscar rota real do OSRM
+  const fetchRoute = async (
+    userLat: number, 
+    userLng: number, 
+    storeLat: number, 
+    storeLng: number
+  ): Promise<[number, number][]> => {
+    try {
+      const url = `https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${storeLng},${storeLat}?geometries=geojson&overview=full`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.code === 'Ok' && data.routes?.[0]?.geometry?.coordinates) {
+        // OSRM retorna [lng, lat], mas Leaflet usa [lat, lng]
+        return data.routes[0].geometry.coordinates.map(
+          (coord: [number, number]) => [coord[1], coord[0]]
+        );
+      }
+      
+      // Fallback: linha reta se a API falhar
+      return [[userLat, userLng], [storeLat, storeLng]];
+    } catch (error) {
+      console.error('Erro ao buscar rota:', error);
+      return [[userLat, userLng], [storeLat, storeLng]];
+    }
+  };
+
   // Função para desenhar rota
-  const drawRoute = (userLat: number, userLng: number, storeLat: number, storeLng: number) => {
+  const drawRoute = async (userLat: number, userLng: number, storeLat: number, storeLng: number) => {
     if (!mapRef.current) return;
+
+    setIsLoadingRoute(true);
+
+    // Busca rota real do OSRM
+    const routeCoordinates = await fetchRoute(userLat, userLng, storeLat, storeLng);
 
     // Remove linha anterior
     if (routeLineRef.current) {
       routeLineRef.current.remove();
     }
 
-    // Desenha nova linha vermelha
-    routeLineRef.current = L.polyline(
-      [[userLat, userLng], [storeLat, storeLng]],
-      {
-        color: 'red',
-        weight: 4,
-        opacity: 0.7,
-        dashArray: '10, 10'
-      }
-    ).addTo(mapRef.current);
+    // Desenha rota seguindo as ruas
+    routeLineRef.current = L.polyline(routeCoordinates, {
+      color: 'red',
+      weight: 4,
+      opacity: 0.7,
+      dashArray: '10, 10'
+    }).addTo(mapRef.current);
 
     // Ajusta o zoom para mostrar toda a rota
     mapRef.current.fitBounds(routeLineRef.current.getBounds(), { padding: [50, 50] });
+    
+    setIsLoadingRoute(false);
   };
 
   // Função para iniciar rastreamento em tempo real
@@ -124,7 +157,7 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
 
     // Rastrear posição em tempo real (atualiza a cada movimento)
     watchIdRef.current = navigator.geolocation.watchPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
 
         // Atualizar marcador do usuário
@@ -141,9 +174,9 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
         // Notificar mudança de localização
         onLocationChange?.({ lat: latitude, lng: longitude });
 
-        // Desenhar/atualizar rota
+        // Desenhar/atualizar rota seguindo as ruas
         if (selectedStoreRef.current) {
-          drawRoute(latitude, longitude, selectedStoreRef.current.latitude, selectedStoreRef.current.longitude);
+          await drawRoute(latitude, longitude, selectedStoreRef.current.latitude, selectedStoreRef.current.longitude);
         }
       },
       (error) => {
@@ -152,7 +185,7 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
       {
         enableHighAccuracy: true,
         timeout: 5000,
-        maximumAge: 0
+        maximumAge: 2000
       }
     );
   };
