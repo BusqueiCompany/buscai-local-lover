@@ -173,7 +173,7 @@ export default function Home() {
   return (
     <div className="min-h-screen pb-20 bg-background">
       {/* Header */}
-      <header className="bg-gradient-to-b from-emerald-500/10 via-emerald-500/5 to-background border-b-2 border-emerald-500/20 sticky top-0 z-50 shadow-lg shadow-emerald-500/10">
+      <header className="bg-background border-b-2 border-primary/30 sticky top-0 z-50 shadow-lg shadow-primary/10">
         <div className="max-w-lg mx-auto px-4 py-3">
           {/* Endereço */}
           <div className="flex items-center justify-center gap-2 mb-3">
