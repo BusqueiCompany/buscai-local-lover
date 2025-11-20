@@ -125,14 +125,9 @@ export default function Radar() {
     return distance < 1 ? `${(distance * 1000).toFixed(0)}m` : `${distance.toFixed(1)}km`;
   };
 
-  const handleNavigateToStore = (store: Store) => {
-    if (userLocation) {
-      // Abre Google Maps com rota da localização atual até a loja
-      const url = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lng}/${store.latitude},${store.longitude}`;
-      window.open(url, '_blank');
-    } else {
-      toast.error("Clique em 'Minha Localização' no mapa para calcular a rota");
-    }
+  const handleStartRoute = (store: Store) => {
+    window.dispatchEvent(new CustomEvent('start-route', { detail: store }));
+    setDetailsOpen(false); // Fecha o dialog
   };
 
   const handleStoreClick = (store: Store) => {
@@ -325,36 +320,16 @@ export default function Radar() {
               </div>
 
               <div className="flex gap-2 pt-4 border-t">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  if (selectedStore && userLocation) {
-                    // Abre rota com origem e destino
-                    window.open(
-                      `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lng}/${selectedStore.latitude},${selectedStore.longitude}`,
-                      '_blank'
-                    );
-                  } else if (selectedStore) {
-                    // Sem localização - pede para clicar em Minha Localização
-                    toast.error("Clique em 'Minha Localização' no mapa para ver a rota");
-                  }
-                }}
-              >
-                <MapPin className="mr-2 h-4 w-4" />
-                Ver Rota
-              </Button>
-
                 <Button
-                  className="flex-1"
+                  className="w-full"
                   onClick={() => {
                     if (selectedStore) {
-                      handleNavigateToStore(selectedStore);
+                      handleStartRoute(selectedStore);
                     }
                   }}
                 >
                   <Navigation className="mr-2 h-4 w-4" />
-                  Ir para Loja
+                  Iniciar Rota
                 </Button>
               </div>
             </div>
