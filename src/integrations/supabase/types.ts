@@ -143,6 +143,146 @@ export type Database = {
           },
         ]
       }
+      parametros_sistema: {
+        Row: {
+          created_at: string
+          distancia_max_checkin: number
+          id: string
+          minutos_gratis: number
+          taxa_por_minuto: number
+          timeout_aceite: number
+        }
+        Insert: {
+          created_at?: string
+          distancia_max_checkin?: number
+          id?: string
+          minutos_gratis?: number
+          taxa_por_minuto?: number
+          timeout_aceite?: number
+        }
+        Update: {
+          created_at?: string
+          distancia_max_checkin?: number
+          id?: string
+          minutos_gratis?: number
+          taxa_por_minuto?: number
+          timeout_aceite?: number
+        }
+        Relationships: []
+      }
+      pedido_logs: {
+        Row: {
+          acao: string
+          detalhe: string | null
+          id: string
+          pedido_id: string
+          timestamp: string
+          usuario_id: string | null
+        }
+        Insert: {
+          acao: string
+          detalhe?: string | null
+          id?: string
+          pedido_id: string
+          timestamp?: string
+          usuario_id?: string | null
+        }
+        Update: {
+          acao?: string
+          detalhe?: string | null
+          id?: string
+          pedido_id?: string
+          timestamp?: string
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedido_logs_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pedidos: {
+        Row: {
+          aceita_ajuste: boolean | null
+          atualizado_em: string
+          checkin_loja: string | null
+          chegada_cliente: string | null
+          cliente_id: string | null
+          criado_em: string
+          entregador_id: string | null
+          fotos: Json | null
+          id: string
+          inicio_coleta: string | null
+          inicio_fila: string | null
+          itens: Json | null
+          loja_lat: number | null
+          loja_lng: number | null
+          loja_nome: string
+          movimento_loja: string | null
+          nota_fiscal_url: string | null
+          obs_entregador: string | null
+          saida_loja: string | null
+          status: string
+          taxa_por_minuto: number | null
+          tempo_extra_minutos: number | null
+          valor_tempo_extra: number | null
+        }
+        Insert: {
+          aceita_ajuste?: boolean | null
+          atualizado_em?: string
+          checkin_loja?: string | null
+          chegada_cliente?: string | null
+          cliente_id?: string | null
+          criado_em?: string
+          entregador_id?: string | null
+          fotos?: Json | null
+          id?: string
+          inicio_coleta?: string | null
+          inicio_fila?: string | null
+          itens?: Json | null
+          loja_lat?: number | null
+          loja_lng?: number | null
+          loja_nome: string
+          movimento_loja?: string | null
+          nota_fiscal_url?: string | null
+          obs_entregador?: string | null
+          saida_loja?: string | null
+          status?: string
+          taxa_por_minuto?: number | null
+          tempo_extra_minutos?: number | null
+          valor_tempo_extra?: number | null
+        }
+        Update: {
+          aceita_ajuste?: boolean | null
+          atualizado_em?: string
+          checkin_loja?: string | null
+          chegada_cliente?: string | null
+          cliente_id?: string | null
+          criado_em?: string
+          entregador_id?: string | null
+          fotos?: Json | null
+          id?: string
+          inicio_coleta?: string | null
+          inicio_fila?: string | null
+          itens?: Json | null
+          loja_lat?: number | null
+          loja_lng?: number | null
+          loja_nome?: string
+          movimento_loja?: string | null
+          nota_fiscal_url?: string | null
+          obs_entregador?: string | null
+          saida_loja?: string | null
+          status?: string
+          taxa_por_minuto?: number | null
+          tempo_extra_minutos?: number | null
+          valor_tempo_extra?: number | null
+        }
+        Relationships: []
+      }
       produtos: {
         Row: {
           categoria_id: string | null
@@ -316,7 +456,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "FREE" | "VIP" | "PARCEIRO" | "SUPORTE" | "ADMINISTRADOR"
+      app_role:
+        | "FREE"
+        | "VIP"
+        | "PARCEIRO"
+        | "SUPORTE"
+        | "ADMINISTRADOR"
+        | "ENTREGADOR"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -444,7 +590,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["FREE", "VIP", "PARCEIRO", "SUPORTE", "ADMINISTRADOR"],
+      app_role: [
+        "FREE",
+        "VIP",
+        "PARCEIRO",
+        "SUPORTE",
+        "ADMINISTRADOR",
+        "ENTREGADOR",
+      ],
     },
   },
 } as const

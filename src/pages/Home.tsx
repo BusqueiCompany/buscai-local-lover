@@ -11,7 +11,8 @@ import {
   Coffee, 
   Cross, 
   Tag, 
-  MessageCircle 
+  MessageCircle,
+  Truck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -220,6 +221,15 @@ export default function Home() {
             >
               <Shield className="w-8 h-8 text-white" strokeWidth={1.8} />
               <span className="text-[10px] text-center font-bold text-white leading-tight">Admin</span>
+            </button>
+          )}
+          {userRole === "ENTREGADOR" && (
+            <button
+              onClick={() => navigate("/entregador")}
+              className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all shadow-md relative"
+            >
+              <Truck className="w-8 h-8 text-white" strokeWidth={1.8} />
+              <span className="text-[10px] text-center font-bold text-white leading-tight">Entregas</span>
             </button>
           )}
         </div>
