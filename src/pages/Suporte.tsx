@@ -35,10 +35,19 @@ export default function Suporte() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDeliveryDialogOpen, setIsDeliveryDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     subject: "",
     description: "",
     priority: "normal"
+  });
+  const [deliveryFormData, setDeliveryFormData] = useState({
+    nome: "",
+    telefone: "",
+    email: "",
+    cpf: "",
+    tem_cnh: false,
+    tipo_veiculo: ""
   });
 
   useEffect(() => {
@@ -135,6 +144,56 @@ export default function Suporte() {
         return "bg-green-500/10 text-green-700 border-green-500/20";
       default:
         return "bg-gray-500/10 text-gray-700 border-gray-500/20";
+    }
+  };
+
+  const handleDeliverySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast.error("Você precisa estar logado");
+      return;
+    }
+
+    if (!deliveryFormData.nome.trim() || !deliveryFormData.telefone.trim() || 
+        !deliveryFormData.email.trim() || !deliveryFormData.cpf.trim() || 
+        !deliveryFormData.tipo_veiculo) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("delivery_requests")
+        .insert({
+          user_id: user.id,
+          nome: deliveryFormData.nome,
+          telefone: deliveryFormData.telefone,
+          email: deliveryFormData.email,
+          cpf: deliveryFormData.cpf,
+          tem_cnh: deliveryFormData.tem_cnh,
+          tipo_veiculo: deliveryFormData.tipo_veiculo
+        });
+
+      if (error) throw error;
+
+      toast.success(
+        "Solicitação enviada com sucesso! Nossa equipe analisará seu cadastro e retornará em até 24-48h.",
+        { duration: 6000 }
+      );
+      
+      setDeliveryFormData({
+        nome: "",
+        telefone: "",
+        email: "",
+        cpf: "",
+        tem_cnh: false,
+        tipo_veiculo: ""
+      });
+      setIsDeliveryDialogOpen(false);
+    } catch (error) {
+      console.error("Erro ao enviar solicitação:", error);
+      toast.error("Erro ao enviar solicitação");
     }
   };
   return <div className="min-h-screen pb-20 bg-background">
@@ -597,10 +656,104 @@ export default function Suporte() {
                   </div>
                 </div>
 
-                <Button className="w-full" size="lg">
-                  <Truck className="h-5 w-5 mr-2" />
-                  Solicitar Cadastro
-                </Button>
+                <Dialog open={isDeliveryDialogOpen} onOpenChange={setIsDeliveryDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full" size="lg">
+                      <Truck className="h-5 w-5 mr-2" />
+                      Solicitar Cadastro
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Solicitar Cadastro como Entregador</DialogTitle>
+                      <DialogDescription>
+                        Preencha seus dados e responderemos em até 24-48 horas
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleDeliverySubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="delivery_nome">Nome Completo</Label>
+                        <Input
+                          id="delivery_nome"
+                          placeholder="Seu nome completo"
+                          value={deliveryFormData.nome}
+                          onChange={(e) => setDeliveryFormData({ ...deliveryFormData, nome: e.target.value })}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="delivery_telefone">Telefone</Label>
+                        <Input
+                          id="delivery_telefone"
+                          type="tel"
+                          placeholder="(00) 00000-0000"
+                          value={deliveryFormData.telefone}
+                          onChange={(e) => setDeliveryFormData({ ...deliveryFormData, telefone: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="delivery_email">Email</Label>
+                        <Input
+                          id="delivery_email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={deliveryFormData.email}
+                          onChange={(e) => setDeliveryFormData({ ...deliveryFormData, email: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="delivery_cpf">CPF</Label>
+                        <Input
+                          id="delivery_cpf"
+                          placeholder="000.000.000-00"
+                          value={deliveryFormData.cpf}
+                          onChange={(e) => setDeliveryFormData({ ...deliveryFormData, cpf: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="delivery_tipo_veiculo">Tipo de Veículo</Label>
+                        <Select
+                          value={deliveryFormData.tipo_veiculo}
+                          onValueChange={(value) => setDeliveryFormData({ ...deliveryFormData, tipo_veiculo: value })}
+                          required
+                        >
+                          <SelectTrigger id="delivery_tipo_veiculo">
+                            <SelectValue placeholder="Selecione o veículo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="bike">Bicicleta</SelectItem>
+                            <SelectItem value="moto">Moto</SelectItem>
+                            <SelectItem value="carro">Carro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="delivery_tem_cnh"
+                          checked={deliveryFormData.tem_cnh}
+                          onChange={(e) => setDeliveryFormData({ ...deliveryFormData, tem_cnh: e.target.checked })}
+                          className="h-4 w-4 rounded border-border"
+                        />
+                        <Label htmlFor="delivery_tem_cnh" className="cursor-pointer">
+                          Possui CNH (Carteira Nacional de Habilitação)
+                        </Label>
+                      </div>
+
+                      <Button type="submit" className="w-full">
+                        Enviar Solicitação
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
 
                 <div className="pt-4 border-t">
                   <p className="text-sm text-muted-foreground mb-3">Vantagens</p>
