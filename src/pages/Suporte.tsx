@@ -6,13 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { BottomNav } from "@/components/ui/bottom-nav";
-
 export default function Suporte() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("chat");
-
-  return (
-    <div className="min-h-screen pb-20 bg-background">
+  return <div className="min-h-screen pb-20 bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4">
@@ -59,11 +56,7 @@ export default function Suporte() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button 
-                  className="w-full" 
-                  size="lg"
-                  onClick={() => navigate("/suporte/chat")}
-                >
+                <Button className="w-full" size="lg" onClick={() => navigate("/suporte/chat")}>
                   <MessageSquare className="h-5 w-5 mr-2" />
                   Iniciar Conversa
                 </Button>
@@ -203,10 +196,11 @@ export default function Suporte() {
                 </Button>
 
                 <div className="pt-4 border-t">
-                  <p className="text-sm text-muted-foreground mb-3">Benefícios</p>
+                  <p className="text-sm text-muted-foreground mb-3">Benefícios
+
+                </p>
                   <ul className="space-y-2 text-sm">
-                    <li className="flex items-center gap-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    <li className="flex items-center gap-2">Aumento de % nas vendas<div className="h-1.5 w-1.5 rounded-full bg-primary" />
                       Aumento de até 40% nas vendas
                     </li>
                     <li className="flex items-center gap-2">
@@ -218,7 +212,22 @@ export default function Suporte() {
                       Marketing gratuito na plataforma
                     </li>
                     <li className="flex items-center gap-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Suporte dedicado<div className="h-1.5 w-1.5 rounded-full bg-primary" />
                       Suporte dedicado
                     </li>
                   </ul>
@@ -302,6 +311,5 @@ export default function Suporte() {
       </main>
 
       <BottomNav />
-    </div>
-  );
+    </div>;
 }
