@@ -149,7 +149,7 @@ export default function Radar() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold">Radar de Preços</h1>
+              <h1 className="text-xl font-bold">Mapa de Lojas</h1>
               <p className="text-sm text-muted-foreground">{filteredAndSortedStores.length} de {stores.length} comércios</p>
             </div>
           </div>
