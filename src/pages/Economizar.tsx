@@ -55,12 +55,12 @@ export default function Economizar() {
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
         {/* Hero Section */}
-        <Card className="bg-gradient-primary text-white border-0">
+        <Card className="bg-card border border-border shadow-sm">
           <CardContent className="p-6 text-center space-y-4">
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-2xl font-bold text-foreground">
               Aqui você vai economizar muito!
             </h2>
-            <p className="text-white/90">
+            <p className="text-muted-foreground text-lg">
               Vamos te mostrar como aproveitar ao máximo o BUSQUEI
             </p>
           </CardContent>
