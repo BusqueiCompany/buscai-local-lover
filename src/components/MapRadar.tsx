@@ -388,7 +388,7 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
   }
 
   return (
-    <div className="w-full flex flex-col gap-3 bg-background rounded-lg">
+    <div className="w-full flex flex-col gap-3 bg-background rounded-lg relative z-10">
       {/* Campo de busca */}
       <div className="relative">
         <Input
@@ -446,7 +446,7 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
       {/* Mapa */}
       <div
         ref={containerRef}
-        className="w-full h-[400px] rounded-md border border-border shadow-sm"
+        className="w-full h-[400px] rounded-md border border-border shadow-sm relative z-0"
       />
     </div>
   );
