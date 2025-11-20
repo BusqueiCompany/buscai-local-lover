@@ -251,7 +251,7 @@ export default function Radar() {
               <Card className="bg-primary/5 border-primary/20 rounded-xl shadow-sm">
                 <CardContent className="p-4">
                   <p className="text-sm text-center text-foreground/80 leading-relaxed">
-                    💡 <strong className="text-foreground">Dica:</strong> Toque em um estabelecimento para ver mais detalhes sobre o comércio.
+                    🏪 <strong className="text-foreground">Quer ver sua loja aqui neste mapa?</strong> Tenha mais visibilidade, aumente seus lucros e divulgue sua marca! Seja nosso parceiro e venha fazer parte da nossa equipe com diversos benefícios exclusivos.
                   </p>
                 </CardContent>
               </Card>
