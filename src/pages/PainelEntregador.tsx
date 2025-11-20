@@ -68,16 +68,18 @@ export default function PainelEntregador() {
   const [tentativasReconexao, setTentativasReconexao] = useState(0);
 
   useEffect(() => {
-    if (!loading && userRole !== "ENTREGADOR") {
+    if (!loading && userRole !== "ENTREGADOR" && userRole !== "ADMINISTRADOR") {
       navigate("/");
       toast.error("Acesso negado - apenas entregadores");
     }
   }, [userRole, loading, navigate]);
 
   useEffect(() => {
-    if (userRole === "ENTREGADOR" && user) {
-      fetchPedidoAtual();
-      fetchParametros();
+    if (userRole === "ENTREGADOR" || userRole === "ADMINISTRADOR") {
+      if (user) {
+        fetchPedidoAtual();
+        fetchParametros();
+      }
     }
   }, [userRole, user]);
 
