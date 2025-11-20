@@ -294,7 +294,7 @@ export default function Home() {
                   };
                   
                   if (iconMap[item.label]) {
-                    return <img src={iconMap[item.label]} alt={item.label} className="w-16 h-16 object-contain" />;
+                    return <img src={iconMap[item.label]} alt={item.label} className="w-16 h-16 object-contain rounded-2xl" />;
                   }
                   
                   return <IconComponent className={`w-8 h-8 ${item.color}`} strokeWidth={1.8} />;
