@@ -163,6 +163,8 @@ export default function Auth() {
         }
 
         if (authData.user) {
+          const bairroFinal = selectedBairro === "Outros" ? outrosBairro : selectedBairro;
+          
           const { error: profileError } = await supabase.from("profiles").update({
             nome_completo: nome,
             data_nascimento: nascimento,
@@ -172,11 +174,27 @@ export default function Auth() {
             sexo: selectedSexo,
             cpf: cpf || null,
             referencia: referencia || null,
-            bairro: selectedBairro === "Outros" ? outrosBairro : selectedBairro,
+            bairro: bairroFinal,
           }).eq("id", authData.user.id);
 
           if (profileError) {
             console.error("Error updating profile:", profileError);
+          }
+
+          // Criar endereço padrão em user_addresses
+          const { error: addressError } = await supabase.from("user_addresses").insert({
+            user_id: authData.user.id,
+            nome: "Casa",
+            endereco,
+            numero,
+            bairro: bairroFinal,
+            complemento: "",
+            referencia: referencia || "",
+            is_active: true,
+          });
+
+          if (addressError) {
+            console.error("Error creating address:", addressError);
           }
         }
 
