@@ -30,9 +30,13 @@ interface MapRJProps {
 // Foco inicial na Zona Oeste
 function SetViewOnMount({ coords }: { coords: [number, number] }) {
   const map = useMap();
+  
   useEffect(() => {
     map.setView(coords, 12);
+    // Salvar referência global do mapa
+    (window as any)._leaflet_map = map;
   }, [coords, map]);
+  
   return null;
 }
 
@@ -79,7 +83,7 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: M
   };
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
       {/* Botão flutuante "Minha Localização" */}
       <button
         onClick={handleLocateUser}
@@ -94,6 +98,7 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: M
           border: "1px solid #ccc",
           cursor: "pointer",
           fontWeight: "bold",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         }}
       >
         📍 Minha localização
@@ -113,6 +118,7 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: M
             border: "2px solid #ff6b6b",
             fontWeight: "bold",
             color: "#ff6b6b",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
           }}
         >
           🔴 MODO ADMIN - Clique no mapa para adicionar loja
@@ -124,11 +130,6 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: M
         zoom={10}
         scrollWheelZoom
         style={{ width: "100%", height: "100%" }}
-        ref={(map: any) => {
-          if (map) {
-            (window as any)._leaflet_map = map;
-          }
-        }}
       >
         <TileLayer
           attribution="&copy; OpenStreetMap"
