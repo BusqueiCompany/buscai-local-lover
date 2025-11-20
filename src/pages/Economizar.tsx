@@ -38,18 +38,17 @@ export default function Economizar() {
   return (
     <div className="min-h-screen pb-20 bg-background">
       {/* Header */}
-      <header className="bg-gradient-primary text-white sticky top-0 z-40">
+      <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="text-white hover:bg-white/20"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold">Quero Economizar %</h1>
+            <h1 className="text-xl font-bold text-foreground">Quero Economizar %</h1>
           </div>
         </div>
       </header>
