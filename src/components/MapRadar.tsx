@@ -388,7 +388,7 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
   }
 
   return (
-    <div className="w-full flex flex-col gap-3 bg-background p-4 rounded-lg">
+    <div className="w-full flex flex-col gap-3 bg-background rounded-lg">
       {/* Campo de busca */}
       <div className="relative">
         <Input
@@ -424,11 +424,11 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
       <div className="flex gap-2">
         <Button
           onClick={goToMyLocation}
-          variant="outline"
-          className="flex-1"
+          variant="default"
+          className="flex-1 bg-primary hover:bg-primary/90 shadow-md"
           disabled={isTracking}
         >
-          <MapPin className="mr-2 h-4 w-4" />
+          <MapPin className="mr-2 h-5 w-5" />
           Minha Localização
         </Button>
 
