@@ -29,6 +29,7 @@ interface UserProfile {
   referencia: string | null;
   sexo: string | null;
   is_active: boolean;
+  created_at: string | null;
   role: UserRole;
 }
 
@@ -85,6 +86,7 @@ export default function Seeds() {
           referencia: profile.referencia,
           sexo: profile.sexo,
           is_active: profile.is_active ?? true,
+          created_at: profile.created_at,
           role: userRole?.role || "FREE"
         };
       });
@@ -181,15 +183,41 @@ export default function Seeds() {
     );
   }
 
+  const handleResetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) throw error;
+      toast.success("Email de reset de senha enviado");
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      toast.error("Erro ao enviar email de reset");
+    }
+  };
+
   const exportToCSV = () => {
-    const headers = ["ID", "Email", "Nome", "Telefone", "CPF", "Role", "Ativo"];
+    const headers = ["ID", "Email", "Nome", "Telefone", "CPF", "Data Nascimento", "Endereço", "Bairro", "Role", "Ativo", "Criado em"];
     const rows = users.map(u => [
-      u.id, u.email, u.nome_completo || "", u.telefone || "", 
-      u.cpf || "", u.role, u.is_active ? "Sim" : "Não"
+      u.id,
+      u.email,
+      u.nome_completo || "",
+      u.telefone || "",
+      u.cpf || "",
+      u.data_nascimento || "",
+      u.endereco || "",
+      u.bairro || "",
+      u.role,
+      u.is_active ? "Sim" : "Não",
+      new Date(u.created_at || "").toLocaleDateString("pt-BR")
     ]);
     
-    const csvContent = [headers, ...rows].map(row => row.join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${cell}"`).join(","))
+      .join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -222,6 +250,7 @@ export default function Seeds() {
                 <TableHead>CPF</TableHead>
                 <TableHead>Nível</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Criado em</TableHead>
                 <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -243,13 +272,30 @@ export default function Seeds() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(user)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    {user.created_at
+                      ? new Date(user.created_at).toLocaleDateString("pt-BR")
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(user)}
+                        title="Editar"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleResetPassword(user.email)}
+                        title="Reset Senha"
+                        disabled={isRootAccount(user.email)}
+                      >
+                        🔑
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

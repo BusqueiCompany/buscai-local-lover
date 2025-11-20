@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ConfiguracoesAdmin() {
@@ -19,28 +18,22 @@ export default function ConfiguracoesAdmin() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </AdminLayout>
     );
   }
 
+  if (!isAdmin) return null;
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6">
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/admin/dashboard")}
-            className="hover:bg-muted"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Configurações</h1>
-            <p className="text-muted-foreground">Configurações gerais do sistema</p>
-          </div>
+    <AdminLayout>
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold text-foreground">Configurações</h2>
+          <p className="text-muted-foreground">Configurações gerais do sistema</p>
         </div>
 
         <Card>
@@ -49,12 +42,11 @@ export default function ConfiguracoesAdmin() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              Página de configurações em desenvolvimento. Em breve você poderá gerenciar
-              configurações do sistema aqui.
+              Página de configurações em desenvolvimento. Parâmetros do sistema, integrações e backups.
             </p>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

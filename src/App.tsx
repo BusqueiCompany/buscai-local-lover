@@ -27,6 +27,7 @@ import AtualizarPrecos from "./pages/admin/AtualizarPrecos";
 import GerenciarPedidos from "./pages/admin/GerenciarPedidos";
 import Entregadores from "./pages/admin/Entregadores";
 import SuporteAdmin from "./pages/admin/Suporte";
+import Logs from "./pages/admin/Logs";
 import PainelEntregador from "./pages/PainelEntregador";
 import NotFound from "./pages/NotFound";
 
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/admin/pedidos" element={<GerenciarPedidos />} />
             <Route path="/admin/entregadores" element={<Entregadores />} />
             <Route path="/admin/suporte" element={<SuporteAdmin />} />
+            <Route path="/admin/logs" element={<Logs />} />
             <Route path="/entregador" element={<PainelEntregador />} />
             
             {/* Placeholder routes */}

@@ -438,6 +438,39 @@ export type Database = {
         }
         Relationships: []
       }
+      system_logs: {
+        Row: {
+          action: string
+          created_at: string
+          data_diff: Json | null
+          id: string
+          target_id: string | null
+          target_type: string | null
+          timestamp: string
+          user_id_admin: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          data_diff?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+          timestamp?: string
+          user_id_admin?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          data_diff?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+          timestamp?: string
+          user_id_admin?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
