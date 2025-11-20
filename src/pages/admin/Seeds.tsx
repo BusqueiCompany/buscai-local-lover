@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -11,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { ArrowLeft, Edit } from "lucide-react";
+import { Edit, Download } from "lucide-react";
 
 type UserRole = "FREE" | "VIP" | "PARCEIRO" | "SUPORTE" | "ADMINISTRADOR" | "ENTREGADOR";
 
@@ -172,28 +173,43 @@ export default function Seeds() {
 
   if (loading || loadingUsers) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </AdminLayout>
     );
   }
 
+  const exportToCSV = () => {
+    const headers = ["ID", "Email", "Nome", "Telefone", "CPF", "Role", "Ativo"];
+    const rows = users.map(u => [
+      u.id, u.email, u.nome_completo || "", u.telefone || "", 
+      u.cpf || "", u.role, u.is_active ? "Sim" : "Não"
+    ]);
+    
+    const csvContent = [headers, ...rows].map(row => row.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `users-${new Date().toISOString()}.csv`;
+    a.click();
+    toast.success("CSV exportado com sucesso");
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6">
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/admin/dashboard")}
-            className="hover:bg-muted"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+    <AdminLayout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Seeds - Gerenciamento Completo</h1>
-            <p className="text-muted-foreground">Visualizar e editar dados completos dos usuários</p>
+            <h2 className="text-3xl font-bold text-foreground">Seeds / Users</h2>
+            <p className="text-muted-foreground">Gerenciar todos os usuários do sistema</p>
           </div>
+          <Button onClick={exportToCSV} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Exportar CSV
+          </Button>
         </div>
 
         <div className="rounded-md border">
@@ -401,6 +417,6 @@ export default function Seeds() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
