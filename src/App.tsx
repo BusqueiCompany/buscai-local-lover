@@ -29,6 +29,7 @@ import GerenciarPedidos from "./pages/admin/GerenciarPedidos";
 import Entregadores from "./pages/admin/Entregadores";
 import SuporteAdmin from "./pages/admin/SuporteAdmin";
 import Logs from "./pages/admin/Logs";
+import Mapa from "./pages/Mapa";
 import PainelEntregador from "./pages/PainelEntregador";
 import NotFound from "./pages/NotFound";
 
@@ -78,6 +79,7 @@ const App = () => (
             <Route path="/vip" element={<Vip />} />
             <Route path="/suporte" element={<Suporte />} />
             <Route path="/suporte/chat" element={<SuporteChat />} />
+            <Route path="/mapa" element={<Mapa />} />
             <Route path="/parceiros" element={<Placeholder />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
