@@ -138,7 +138,7 @@ export default function Radar() {
   return (
     <div className="min-h-screen pb-20 bg-background">
       {/* Header */}
-      <header className="bg-gradient-primary text-white sticky top-0 z-40 shadow-lg mb-2">
+      <header className="bg-gradient-primary text-white sticky top-0 z-40 shadow-lg">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button
@@ -157,7 +157,7 @@ export default function Radar() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto pb-6 pt-4">
+      <main className="max-w-lg mx-auto px-4 py-8">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <p className="text-muted-foreground">Carregando comércios...</p>
@@ -165,8 +165,8 @@ export default function Radar() {
         ) : (
           <>
             {/* Mapa com busca e lojas */}
-            <div className="px-4 pt-4">
-              <MapRadar 
+        <div>
+          <MapRadar
                 stores={filteredAndSortedStores}
                 onStoreClick={handleStoreClick}
                 onLocationChange={(coords) => setUserLocation(coords)}
@@ -174,7 +174,7 @@ export default function Radar() {
             </div>
 
             {/* Filtros de categoria */}
-            <div className="px-4 pt-4">
+            <div className="pt-4">
               <div className="flex items-center gap-2 overflow-x-auto pb-2">
                 {categories.map((cat) => (
                   <Badge
@@ -190,7 +190,7 @@ export default function Radar() {
             </div>
 
             {/* Stores List */}
-            <div className="px-4 py-4 space-y-3">
+            <div className="py-4 space-y-3">
               <h2 className="font-bold text-lg flex items-center gap-2 mb-4 text-foreground">
                 <Store className="h-5 w-5 text-primary" />
                 Comércios {userLocation && "por Proximidade"}
@@ -248,7 +248,7 @@ export default function Radar() {
             </div>
 
             {/* Info Card */}
-            <div className="px-4 mt-4">
+            <div className="mt-4">
               <Card className="bg-primary/5 border-primary/20 rounded-xl shadow-sm">
                 <CardContent className="p-4">
                   <p className="text-sm text-center text-foreground/80 leading-relaxed">
