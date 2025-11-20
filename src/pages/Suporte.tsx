@@ -200,7 +200,7 @@ export default function Suporte() {
 
                 </p>
                   <ul className="space-y-2 text-sm">
-                    <li className="flex items-center gap-2">Aumento de % nas vendas<div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    <li className="flex items-center gap-2">Aumento de % nas vendasAumento de até 40% nas vendas.<div className="h-1.5 w-1.5 rounded-full bg-primary" />
                       Aumento de até 40% nas vendas
                     </li>
                     <li className="flex items-center gap-2">
