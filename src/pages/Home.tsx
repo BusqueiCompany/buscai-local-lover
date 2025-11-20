@@ -173,11 +173,11 @@ export default function Home() {
   return (
     <div className="min-h-screen pb-20 bg-background">
       {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
+      <header className="bg-gradient-to-b from-emerald-500/10 via-emerald-500/5 to-background border-b-2 border-emerald-500/20 sticky top-0 z-40 shadow-lg shadow-emerald-500/10">
         <div className="max-w-lg mx-auto px-4 py-3">
           {/* Endereço */}
           <div className="flex items-center justify-center gap-2 mb-3">
-            <MapPin className="h-4 w-4 text-primary" />
+            <MapPin className="h-4 w-4 text-emerald-600" />
             <span className="text-sm font-medium">
               {activeAddress 
                 ? `${activeAddress.endereco}, ${activeAddress.numero} - ${activeAddress.bairro}`
@@ -186,7 +186,7 @@ export default function Home() {
               <Button 
                 variant="link" 
                 size="sm" 
-                className="text-xs text-primary p-0 h-auto"
+                className="text-xs text-emerald-600 p-0 h-auto hover:text-emerald-700"
                 onClick={() => setIsAddressSelectorOpen(true)}
               >
                 Trocar
@@ -196,7 +196,7 @@ export default function Home() {
           {/* Perfil e Notificações */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12 border-2 border-primary">
+              <Avatar className="h-12 w-12 border-2 border-emerald-500">
                 <AvatarImage src="" />
                 <AvatarFallback className="bg-primary text-primary-foreground">
                   {profile?.nome_completo?.charAt(0) || user?.email?.charAt(0) || "U"}
