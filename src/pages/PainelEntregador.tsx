@@ -674,7 +674,9 @@ export default function PainelEntregador() {
               Aguarde a atribuição de um novo pedido
             </p>
           </Card>
-        ) : (
+        ) : null}
+
+        {pedidoAtual && permissaoGPS === 'concedida' && (
           <>
             {/* Card do Pedido */}
             <Card className="p-4 space-y-4">
