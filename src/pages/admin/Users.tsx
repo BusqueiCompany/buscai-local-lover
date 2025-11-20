@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageSquare, Ticket } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type UserRole = "FREE" | "VIP" | "PARCEIRO" | "SUPORTE" | "ADMINISTRADOR" | "ENTREGADOR";
 
@@ -20,6 +21,13 @@ interface UserProfile {
   role: UserRole;
 }
 
+interface SupportTicket {
+  id: string;
+  subject: string;
+  status: string;
+  created_at: string;
+}
+
 export default function Users() {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
@@ -27,6 +35,9 @@ export default function Users() {
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [userTickets, setUserTickets] = useState<SupportTicket[]>([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
 
   useEffect(() => {
     if (!loading && !isAdmin) {
@@ -146,6 +157,39 @@ export default function Users() {
     }
   };
 
+  const handleViewUserTickets = async (userId: string) => {
+    setSelectedUserId(userId);
+    setLoadingTickets(true);
+    try {
+      const { data, error } = await supabase
+        .from("support_tickets")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setUserTickets(data || []);
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+      toast.error("Erro ao carregar tickets");
+    } finally {
+      setLoadingTickets(false);
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "aberto":
+        return "Aberto";
+      case "em_andamento":
+        return "Em Andamento";
+      case "resolvido":
+        return "Resolvido";
+      default:
+        return status;
+    }
+  };
+
   if (loading || loadingUsers) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -226,7 +270,7 @@ export default function Users() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 mb-4">
                     <span className="text-sm font-medium">Alterar nível:</span>
                     <Select
                       value={user.role}
@@ -248,11 +292,62 @@ export default function Users() {
                       <Badge className="bg-red-500">CONTA RAIZ</Badge>
                     )}
                   </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewUserTickets(user.id)}
+                    >
+                      <Ticket className="h-4 w-4 mr-2" />
+                      Ver Tickets e Chat
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))
           )}
         </div>
+
+        <Dialog open={!!selectedUserId} onOpenChange={() => setSelectedUserId(null)}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Tickets e Chat do Usuário</DialogTitle>
+            </DialogHeader>
+            
+            {loadingTickets ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-muted-foreground">Carregando tickets...</p>
+              </div>
+            ) : userTickets.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Este usuário não possui tickets</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {userTickets.map((ticket) => (
+                  <Card key={ticket.id}>
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="font-medium">{ticket.subject}</p>
+                          <p className="text-sm text-muted-foreground">
+                            #{ticket.id.slice(0, 8)}
+                          </p>
+                        </div>
+                        <Badge variant="outline">
+                          {getStatusLabel(ticket.status)}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(ticket.created_at).toLocaleDateString("pt-BR")}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

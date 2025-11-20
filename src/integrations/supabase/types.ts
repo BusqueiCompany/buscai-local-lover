@@ -182,6 +182,42 @@ export type Database = {
         }
         Relationships: []
       }
+      partnership_requests: {
+        Row: {
+          created_at: string
+          endereco: string
+          id: string
+          nome: string
+          nome_comercio: string
+          status: string
+          telefone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          endereco: string
+          id?: string
+          nome: string
+          nome_comercio: string
+          status?: string
+          telefone: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          endereco?: string
+          id?: string
+          nome?: string
+          nome_comercio?: string
+          status?: string
+          telefone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pedido_logs: {
         Row: {
           acao: string

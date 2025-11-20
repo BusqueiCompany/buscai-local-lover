@@ -379,10 +379,88 @@ export default function Suporte() {
                   </div>
                 </div>
 
-                <Button className="w-full" size="lg">
-                  <Users className="h-5 w-5 mr-2" />
-                  Solicitar Parceria
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="w-full" size="lg">
+                      <Users className="h-5 w-5 mr-2" />
+                      Solicitar Parceria
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>Solicitar Parceria</DialogTitle>
+                      <DialogDescription>
+                        Preencha os dados abaixo para se tornar nosso parceiro
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!user) {
+                        toast.error("Você precisa estar logado");
+                        return;
+                      }
+
+                      const formData = new FormData(e.currentTarget);
+                      const nome = formData.get("nome") as string;
+                      const telefone = formData.get("telefone") as string;
+                      const nome_comercio = formData.get("nome_comercio") as string;
+                      const endereco = formData.get("endereco") as string;
+
+                      if (!nome || !telefone || !nome_comercio || !endereco) {
+                        toast.error("Preencha todos os campos");
+                        return;
+                      }
+
+                      try {
+                        const { error } = await supabase
+                          .from("partnership_requests")
+                          .insert({
+                            user_id: user.id,
+                            nome,
+                            telefone,
+                            nome_comercio,
+                            endereco
+                          });
+
+                        if (error) throw error;
+
+                        toast.success(
+                          "Solicitação enviada! Nossa IA Mari analisará sua solicitação e entraremos em contato em até 24h para passar todas as informações sobre a parceria.",
+                          { duration: 6000 }
+                        );
+                        
+                        (e.target as HTMLFormElement).reset();
+                      } catch (error) {
+                        console.error("Erro ao enviar solicitação:", error);
+                        toast.error("Erro ao enviar solicitação");
+                      }
+                    }} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="nome">Nome Completo</Label>
+                        <Input id="nome" name="nome" required />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="telefone">Telefone</Label>
+                        <Input id="telefone" name="telefone" type="tel" required />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="nome_comercio">Nome do Comércio</Label>
+                        <Input id="nome_comercio" name="nome_comercio" required />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="endereco">Endereço</Label>
+                        <Textarea id="endereco" name="endereco" rows={3} required />
+                      </div>
+
+                      <Button type="submit" className="w-full">
+                        Enviar Solicitação
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
 
                 <div className="pt-4 border-t">
                   <p className="text-sm text-muted-foreground mb-3">Benefícios</p>
