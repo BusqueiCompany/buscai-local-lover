@@ -11,7 +11,8 @@ import {
   Pill,
   Zap,
   MessageCircle,
-  Truck
+  Truck,
+  ShoppingBag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,7 @@ import petshopIcon from "@/assets/petshop.png";
 import bebidasIcon from "@/assets/bebidas.png";
 import farmaciaIcon from "@/assets/farmacia.png";
 import ofertasIcon from "@/assets/ofertas.png";
+import bazarIcon from "@/assets/bazar.png";
 
 const menuItems = [
   { icon: Utensils, label: "Lanches", route: "/lanches", locked: false, color: "text-orange-500" },
@@ -42,6 +44,7 @@ const menuItems = [
   { icon: Wine, label: "Bebidas", route: "/bebidas", locked: false, color: "text-blue-500" },
   { icon: Pill, label: "Farmácia", route: "/farmacia", locked: false, color: "text-emerald-500" },
   { icon: Zap, label: "Ofertas", route: "/ofertas", locked: true, color: "text-yellow-500" },
+  { icon: ShoppingBag, label: "Bazar", route: "/bazar", locked: false, color: "text-purple-500" },
   { icon: MessageCircle, label: "Suporte", route: "/suporte", locked: false, color: "text-sky-500" },
 ];
 
@@ -267,6 +270,7 @@ export default function Home() {
                     "Bebidas": bebidasIcon,
                     "Farmácia": farmaciaIcon,
                     "Ofertas": ofertasIcon,
+                    "Bazar": bazarIcon,
                   };
                   
                   if (iconMap[item.label]) {

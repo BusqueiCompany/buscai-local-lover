@@ -76,6 +76,7 @@ const App = () => (
             <Route path="/petshops" element={<Placeholder />} />
             <Route path="/bebidas" element={<Placeholder />} />
             <Route path="/farmacia" element={<Placeholder />} />
+            <Route path="/bazar" element={<Placeholder />} />
             <Route path="/vip" element={<Vip />} />
             <Route path="/suporte" element={<Suporte />} />
             <Route path="/suporte/chat" element={<SuporteChat />} />
