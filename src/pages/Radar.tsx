@@ -165,8 +165,8 @@ export default function Radar() {
         ) : (
           <>
             {/* Mapa com busca e lojas */}
-        <div>
-          <MapRadar
+            <div className="mt-6">
+              <MapRadar
                 stores={filteredAndSortedStores}
                 onStoreClick={handleStoreClick}
                 onLocationChange={(coords) => setUserLocation(coords)}
