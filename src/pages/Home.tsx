@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { 
-  Bell, 
   MapPin, 
   Sparkles, 
   Shield, 
@@ -24,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AddressSelector } from "@/components/AddressSelector";
+import { NotificationBell } from "@/components/NotificationBell";
 import banner1 from "@/assets/banner-1.png";
 import banner2 from "@/assets/banner-2.png";
 
@@ -212,15 +212,7 @@ export default function Home() {
                   <Shield className="h-5 w-5" />
                 </Button>
               )}
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative"
-                onClick={() => navigate("/notificacoes")}
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-secondary rounded-full" />
-              </Button>
+              <NotificationBell />
               <Button
                 size="sm"
                 className="gradient-vip-gold text-white font-semibold"
