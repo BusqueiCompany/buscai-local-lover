@@ -33,6 +33,8 @@ export default function Suporte() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [formData, setFormData] = useState({
     subject: "",
     description: "",
@@ -326,7 +328,16 @@ export default function Suporte() {
                                 }
                               </p>
                             </div>
-                            <Button variant="outline" size="sm">Ver Detalhes</Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                setSelectedTicket(ticket);
+                                setIsDetailsOpen(true);
+                              }}
+                            >
+                              Ver Detalhes
+                            </Button>
                           </div>
                         </CardContent>
                       </Card>
@@ -335,6 +346,59 @@ export default function Suporte() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Dialog de Detalhes do Ticket */}
+            <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle>Detalhes do Ticket</DialogTitle>
+                  <DialogDescription>
+                    #{selectedTicket?.id.slice(0, 8)}
+                  </DialogDescription>
+                </DialogHeader>
+                {selectedTicket && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className={getStatusBadgeColor(selectedTicket.status)}>
+                        {getStatusLabel(selectedTicket.status)}
+                      </Badge>
+                      <Badge variant="outline">
+                        Prioridade: {selectedTicket.priority.charAt(0).toUpperCase() + selectedTicket.priority.slice(1)}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Assunto</Label>
+                      <p className="text-sm font-medium">{selectedTicket.subject}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Descrição</Label>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {selectedTicket.description}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Criado em</Label>
+                        <p className="text-sm">
+                          {new Date(selectedTicket.created_at).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                      {selectedTicket.resolved_at && (
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Resolvido em</Label>
+                          <p className="text-sm">
+                            {new Date(selectedTicket.resolved_at).toLocaleString('pt-BR')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Parceiro Tab */}
