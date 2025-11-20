@@ -196,38 +196,26 @@ export default function Suporte() {
                 </Button>
 
                 <div className="pt-4 border-t">
-                  <p className="text-sm text-muted-foreground mb-3">Benefícios
-
-                </p>
+                  <p className="text-sm text-muted-foreground mb-3">Benefícios</p>
                   <ul className="space-y-2 text-sm">
-                    <li className="flex items-center gap-2">Aumento de % nas vendasAumento de até 40% nas vendas.<div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      Aumento de até 40% nas vendas
+                    <li className="flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      Aumento nas suas vendas
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      Gestão facilitada de pedidos
+                      Disponibilidade de entregador
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      Dashboard para gestão e analytics do seu negócio
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                       Marketing gratuito na plataforma
                     </li>
                     <li className="flex items-center gap-2">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Suporte dedicado<div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                       Suporte dedicado
                     </li>
                   </ul>
