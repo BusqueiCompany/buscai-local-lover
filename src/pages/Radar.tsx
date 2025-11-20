@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Navigation, Store, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 
 interface Store {
   id: number;
@@ -22,6 +23,16 @@ const mockStores: Store[] = [
   { id: 3, name: "Farmácia Saúde", type: "Farmácia", distance: "1.2 km", priceRank: 1, lat: -22.8774, lng: -43.5953 },
   { id: 4, name: "Petshop Amigo", type: "Petshop", distance: "1.5 km", priceRank: 3, lat: -22.8804, lng: -43.5983 },
 ];
+
+const mapContainerStyle = {
+  width: "100%",
+  height: "100%",
+};
+
+const defaultCenter = {
+  lat: -22.8784,
+  lng: -43.5963,
+};
 
 export default function Radar() {
   const navigate = useNavigate();
@@ -58,29 +69,51 @@ export default function Radar() {
       </header>
 
       <main className="max-w-lg mx-auto">
-        {/* Map Placeholder */}
-        <div className="relative h-80 bg-gradient-to-br from-background to-muted/30">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center space-y-4 px-6">
-              <div className="relative">
-                <Navigation className="h-12 w-12 mx-auto text-radar-orange animate-pulse drop-shadow-lg" />
-                <div className="absolute -inset-2 bg-radar-orange/10 rounded-full blur-xl" />
-              </div>
-              <p className="text-sm text-foreground/70 font-medium">
-                Mapa interativo em desenvolvimento
-                <br />
-                <span className="text-xs text-muted-foreground">Mostrará comércios próximos em tempo real</span>
-              </p>
-            </div>
-          </div>
-
-          {/* User Location Marker */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="relative">
-              <div className="h-3 w-3 rounded-full bg-radar-blue border-2 border-white shadow-lg animate-pulse" />
-              <div className="absolute inset-0 h-3 w-3 rounded-full bg-radar-blue/30 animate-ping" />
-            </div>
-          </div>
+        {/* Google Maps */}
+        <div className="relative h-80">
+          <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+            <GoogleMap
+              mapContainerStyle={mapContainerStyle}
+              center={defaultCenter}
+              zoom={14}
+              options={{
+                zoomControl: true,
+                streetViewControl: false,
+                mapTypeControl: false,
+                fullscreenControl: false,
+              }}
+            >
+              {/* Store Markers */}
+              {mockStores.map((store) => (
+                <Marker
+                  key={store.id}
+                  position={{ lat: store.lat, lng: store.lng }}
+                  onClick={() => setSelectedStore(store)}
+                  icon={{
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: store.priceRank === 1 ? "#10b981" : store.priceRank === 2 ? "#f59e0b" : "#ef4444",
+                    fillOpacity: 1,
+                    strokeColor: "#ffffff",
+                    strokeWeight: 2,
+                  }}
+                />
+              ))}
+              
+              {/* User Location Marker */}
+              <Marker
+                position={defaultCenter}
+                icon={{
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 8,
+                  fillColor: "#3b82f6",
+                  fillOpacity: 1,
+                  strokeColor: "#ffffff",
+                  strokeWeight: 3,
+                }}
+              />
+            </GoogleMap>
+          </LoadScript>
         </div>
 
         {/* Stores List */}
