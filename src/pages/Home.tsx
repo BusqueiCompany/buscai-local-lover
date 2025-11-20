@@ -27,6 +27,12 @@ import { NotificationBell } from "@/components/NotificationBell";
 import banner1 from "@/assets/banner-1.png";
 import banner2 from "@/assets/banner-2.png";
 import lanchesIcon from "@/assets/lanches.png";
+import restauranteIcon from "@/assets/restaurante.png";
+import mercadoIcon from "@/assets/mercado.png";
+import petshopIcon from "@/assets/petshop.png";
+import bebidasIcon from "@/assets/bebidas.png";
+import farmaciaIcon from "@/assets/farmacia.png";
+import ofertasIcon from "@/assets/ofertas.png";
 
 const menuItems = [
   { icon: Utensils, label: "Lanches", route: "/lanches", locked: false, color: "text-orange-500" },
@@ -252,11 +258,23 @@ export default function Home() {
                     </svg>
                   </div>
                 )}
-                {item.label === "Lanches" ? (
-                  <img src={lanchesIcon} alt="Lanches" className="w-14 h-14 object-cover rounded-full" />
-                ) : (
-                  <IconComponent className={`w-8 h-8 ${item.color}`} strokeWidth={1.8} />
-                )}
+                {(() => {
+                  const iconMap: Record<string, string> = {
+                    "Lanches": lanchesIcon,
+                    "Restaurantes": restauranteIcon,
+                    "Mercados": mercadoIcon,
+                    "Petshops": petshopIcon,
+                    "Bebidas": bebidasIcon,
+                    "Farmácia": farmaciaIcon,
+                    "Ofertas": ofertasIcon,
+                  };
+                  
+                  if (iconMap[item.label]) {
+                    return <img src={iconMap[item.label]} alt={item.label} className="w-14 h-14 object-cover rounded-full" />;
+                  }
+                  
+                  return <IconComponent className={`w-8 h-8 ${item.color}`} strokeWidth={1.8} />;
+                })()}
                 <span className="text-[10px] text-center font-medium leading-tight text-foreground">{item.label}</span>
               </button>
             );
