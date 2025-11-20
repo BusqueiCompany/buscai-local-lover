@@ -61,6 +61,48 @@ export type Database = {
           },
         ]
       }
+      delivery_requests: {
+        Row: {
+          cpf: string
+          created_at: string
+          email: string
+          id: string
+          nome: string
+          status: string
+          telefone: string
+          tem_cnh: boolean
+          tipo_veiculo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cpf: string
+          created_at?: string
+          email: string
+          id?: string
+          nome: string
+          status?: string
+          telefone: string
+          tem_cnh: boolean
+          tipo_veiculo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cpf?: string
+          created_at?: string
+          email?: string
+          id?: string
+          nome?: string
+          status?: string
+          telefone?: string
+          tem_cnh?: boolean
+          tipo_veiculo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       historico_precos: {
         Row: {
           created_at: string
