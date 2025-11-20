@@ -210,15 +210,30 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-primary p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-4">
+    <div className="min-h-screen flex items-center justify-center gradient-primary p-4 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
+      </div>
+
+      <Card className="w-full max-w-md relative z-10 border-2 border-primary/20 shadow-2xl backdrop-blur-sm bg-card/95">
+        <CardHeader className="text-center space-y-6 pb-8">
           <div className="flex justify-center">
-            <img src={logo} alt="BUSQUEI" className="h-32 w-32 object-contain" />
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse-glow" />
+              <img 
+                src={logo} 
+                alt="BUSQUEI" 
+                className="h-32 w-32 object-contain relative z-10 animate-float drop-shadow-2xl" 
+              />
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-3xl font-bold text-primary">BUSQUEI</CardTitle>
-            <CardDescription className="text-base mt-2">
+          <div className="space-y-2">
+            <CardTitle className="text-4xl font-bold bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
+              BUSQUEI
+            </CardTitle>
+            <CardDescription className="text-lg mt-2 text-muted-foreground">
               {isLogin ? "Bem-vindo de volta!" : "Crie sua conta"}
             </CardDescription>
           </div>
@@ -383,7 +398,7 @@ export default function Auth() {
 
             <Button
               type="submit"
-              className="w-full gradient-primary text-lg font-semibold"
+              className="w-full gradient-primary text-lg font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-primary/30"
               disabled={loading}
             >
               {loading ? "Aguarde..." : isLogin ? "Entrar" : "Criar Conta"}
