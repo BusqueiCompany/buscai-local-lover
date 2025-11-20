@@ -8,40 +8,36 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Verde musgo escuro para fundo geral */
-    --background: 120 13% 26%;
-    --foreground: 0 0% 100%;
+    --background: 0 0% 98%;
+    --foreground: 0 0% 15%;
 
-    /* Branco puro para cards e área de conteúdo */
     --card: 0 0% 100%;
     --card-foreground: 0 0% 15%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 15%;
 
-    /* Verde médio para elementos principais */
-    --primary: 120 21% 47%;
+    /* Laranja vibrante principal - inspirado iFood */
+    --primary: 14 100% 60%;
     --primary-foreground: 0 0% 100%;
     
-    /* Verde secundário */
-    --secondary: 120 25% 40%;
+    /* Vermelho suave para destaques */
+    --secondary: 355 85% 55%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Verde muito claro para elementos sutis */
-    --muted: 120 10% 90%;
+    --muted: 0 0% 95%;
     --muted-foreground: 0 0% 45%;
 
-    /* Accent em tom verde */
-    --accent: 120 30% 55%;
+    /* Accent em tom mais quente */
+    --accent: 25 95% 53%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Bordas em tom verde claro */
-    --border: 120 10% 85%;
-    --input: 120 10% 85%;
-    --ring: 120 21% 47%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 14 100% 60%;
 
     --radius: 1rem;
 
@@ -60,8 +56,7 @@ All colors MUST be HSL.
     --radar-title: 0 0% 10%;
     
     /* Gradient definitions */
-    --gradient-header: linear-gradient(180deg, hsl(120 21% 47%) 0%, hsl(0 0% 100%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(120 21% 47%) 0%, hsl(120 25% 40%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(14 100% 60%) 0%, hsl(355 85% 55%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 71% 45%) 100%);
     --gradient-vip-bronze: linear-gradient(135deg, hsl(30 60% 50%) 0%, hsl(25 70% 40%) 100%);
     --gradient-vip-gold: linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(38 92% 50%) 100%);
@@ -147,10 +142,6 @@ All colors MUST be HSL.
       opacity: 0.9;
       box-shadow: 0 0 25px hsl(var(--primary) / 0.8);
     }
-  }
-  
-  .gradient-header {
-    background: var(--gradient-header);
   }
   
   .gradient-primary {

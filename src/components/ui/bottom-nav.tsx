@@ -4,12 +4,12 @@ import { cn } from "@/lib/utils";
 
 export function BottomNav() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
         <NavLink
           to="/"
-          className="flex flex-col items-center justify-center flex-1 h-full text-white/70 transition-colors"
-          activeClassName="text-white"
+          className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground transition-colors"
+          activeClassName="text-primary"
         >
           <Home className="h-5 w-5 mb-1" />
           <span className="text-xs">Início</span>
@@ -17,8 +17,8 @@ export function BottomNav() {
 
         <NavLink
           to="/buscar"
-          className="flex flex-col items-center justify-center flex-1 h-full text-white/70 transition-colors"
-          activeClassName="text-white"
+          className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground transition-colors"
+          activeClassName="text-primary"
         >
           <Search className="h-5 w-5 mb-1" />
           <span className="text-xs">Buscar</span>
@@ -26,17 +26,17 @@ export function BottomNav() {
 
         <NavLink
           to="/vip"
-          className="flex flex-col items-center justify-center flex-1 h-full text-white/70 transition-colors"
-          activeClassName="text-white"
+          className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground transition-colors"
+          activeClassName="text-primary"
         >
-          <Star className="h-5 w-5 mb-1 fill-yellow-400 text-yellow-400" />
+          <Star className="h-5 w-5 mb-1 fill-yellow-500 text-yellow-500" />
           <span className="text-xs">Área VIP</span>
         </NavLink>
 
         <NavLink
           to="/perfil"
-          className="flex flex-col items-center justify-center flex-1 h-full text-white/70 transition-colors"
-          activeClassName="text-white"
+          className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground transition-colors"
+          activeClassName="text-primary"
         >
           <User className="h-5 w-5 mb-1" />
           <span className="text-xs">Perfil</span>
@@ -44,8 +44,8 @@ export function BottomNav() {
 
         <NavLink
           to="/configuracoes"
-          className="flex flex-col items-center justify-center flex-1 h-full text-white/70 transition-colors"
-          activeClassName="text-white"
+          className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground transition-colors"
+          activeClassName="text-primary"
         >
           <Settings className="h-5 w-5 mb-1" />
           <span className="text-xs">Config</span>
