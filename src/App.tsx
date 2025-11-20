@@ -14,6 +14,10 @@ import Placeholder from "./pages/Placeholder";
 import Vip from "./pages/Vip";
 import Suporte from "./pages/Suporte";
 import AdminDashboard from "./pages/admin/Dashboard";
+import LojasCode from "./pages/admin/LojasCode";
+import Importacoes from "./pages/admin/Importacoes";
+import ImportarProdutos from "./pages/admin/ImportarProdutos";
+import ConfiguracoesAdmin from "./pages/admin/ConfiguracoesAdmin";
 import Users from "./pages/admin/Users";
 import Seeds from "./pages/admin/Seeds";
 import ImportarLojas from "./pages/admin/ImportarLojas";
@@ -42,11 +46,15 @@ const App = () => (
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/lojas" element={<GerenciarLojas />} />
+            <Route path="/admin/lojas-code" element={<LojasCode />} />
+            <Route path="/admin/produtos" element={<GerenciarProdutos />} />
+            <Route path="/admin/importacoes" element={<Importacoes />} />
+            <Route path="/admin/importar-lojas" element={<ImportarLojas />} />
+            <Route path="/admin/importar-produtos" element={<ImportarProdutos />} />
+            <Route path="/admin/configuracoes" element={<ConfiguracoesAdmin />} />
             <Route path="/admin/users" element={<Users />} />
             <Route path="/admin/seeds" element={<Seeds />} />
-            <Route path="/admin/importar-lojas" element={<ImportarLojas />} />
-            <Route path="/admin/lojas" element={<GerenciarLojas />} />
-            <Route path="/admin/produtos" element={<GerenciarProdutos />} />
             <Route path="/admin/precos" element={<AtualizarPrecos />} />
             <Route path="/admin/pedidos" element={<GerenciarPedidos />} />
             <Route path="/entregador" element={<PainelEntregador />} />
