@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +24,9 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [selectedBairro, setSelectedBairro] = useState("");
   const [selectedSexo, setSelectedSexo] = useState("");
+  const [lembrarEmail, setLembrarEmail] = useState(false);
+  const [loginAutomatico, setLoginAutomatico] = useState(false);
+  const [emailSalvo, setEmailSalvo] = useState("");
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -31,6 +35,52 @@ export default function Auth() {
       navigate("/");
     }
   }, [user, navigate]);
+
+  // Carregar preferências salvas
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("busquei_saved_email");
+    const autoLogin = localStorage.getItem("busquei_auto_login") === "true";
+    const savedPassword = localStorage.getItem("busquei_saved_password");
+
+    if (savedEmail) {
+      setEmailSalvo(savedEmail);
+      setLembrarEmail(true);
+    }
+
+    if (autoLogin && savedEmail && savedPassword) {
+      setLoginAutomatico(true);
+      // Fazer login automático
+      realizarLoginAutomatico(savedEmail, savedPassword);
+    }
+  }, []);
+
+  const realizarLoginAutomatico = async (email: string, encodedPassword: string) => {
+    try {
+      setLoading(true);
+      const password = atob(encodedPassword); // Decodificar senha
+      
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password,
+      });
+
+      if (error) {
+        // Se falhar, limpar credenciais salvas
+        localStorage.removeItem("busquei_saved_password");
+        localStorage.removeItem("busquei_auto_login");
+        toast.error("Login automático falhou. Por favor, faça login novamente.");
+        return;
+      }
+
+      toast.success("Login automático realizado!");
+      navigate("/");
+    } catch (error) {
+      localStorage.removeItem("busquei_saved_password");
+      localStorage.removeItem("busquei_auto_login");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -59,6 +109,21 @@ export default function Auth() {
             toast.error("Erro ao fazer login: " + error.message);
           }
           return;
+        }
+
+        // Salvar preferências de login
+        if (lembrarEmail || loginAutomatico) {
+          localStorage.setItem("busquei_saved_email", email.trim());
+        } else {
+          localStorage.removeItem("busquei_saved_email");
+        }
+
+        if (loginAutomatico) {
+          localStorage.setItem("busquei_auto_login", "true");
+          localStorage.setItem("busquei_saved_password", btoa(senha)); // Codificar senha em base64
+        } else {
+          localStorage.removeItem("busquei_auto_login");
+          localStorage.removeItem("busquei_saved_password");
         }
 
         toast.success("Login realizado com sucesso!");
@@ -190,7 +255,14 @@ export default function Auth() {
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="seu@email.com" required />
+              <Input 
+                id="email" 
+                name="email" 
+                type="email" 
+                placeholder="seu@email.com" 
+                defaultValue={isLogin ? emailSalvo : ""}
+                required 
+              />
             </div>
 
             {!isLogin && (
@@ -204,6 +276,42 @@ export default function Auth() {
               <Label htmlFor="senha">Senha</Label>
               <Input id="senha" name="senha" type="password" placeholder="••••••••" required />
             </div>
+
+            {isLogin && (
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="lembrar-email"
+                    checked={lembrarEmail}
+                    onCheckedChange={(checked) => {
+                      setLembrarEmail(checked as boolean);
+                      if (!checked) {
+                        setLoginAutomatico(false);
+                      }
+                    }}
+                  />
+                  <Label htmlFor="lembrar-email" className="text-sm font-normal cursor-pointer">
+                    Lembrar meu email
+                  </Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="login-automatico"
+                    checked={loginAutomatico}
+                    onCheckedChange={(checked) => {
+                      setLoginAutomatico(checked as boolean);
+                      if (checked) {
+                        setLembrarEmail(true);
+                      }
+                    }}
+                  />
+                  <Label htmlFor="login-automatico" className="text-sm font-normal cursor-pointer">
+                    Fazer login automaticamente
+                  </Label>
+                </div>
+              </div>
+            )}
 
             {!isLogin && (
               <>
