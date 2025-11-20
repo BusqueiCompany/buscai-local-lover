@@ -401,7 +401,7 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
         
         {/* Sugestões */}
         {suggestions.length > 0 && (
-          <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-40 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
             {suggestions.map((item, idx) => (
               <button
                 key={idx}

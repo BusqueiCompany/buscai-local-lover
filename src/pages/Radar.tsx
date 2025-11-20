@@ -138,7 +138,7 @@ export default function Radar() {
   return (
     <div className="min-h-screen pb-20 bg-background">
       {/* Header */}
-      <header className="bg-gradient-primary text-white sticky top-0 z-40 shadow-lg">
+      <header className="bg-gradient-primary text-white sticky top-0 z-50 shadow-lg">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button
