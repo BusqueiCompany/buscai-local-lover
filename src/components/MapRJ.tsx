@@ -58,6 +58,7 @@ function AdminAddStoreEvent({ onSelect }: { onSelect?: (coords: { lat: number; l
 }
 
 export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: MapRJProps) {
+  console.log("MapRJ carregado", { stores, isAdmin });
   const zonaOesteCenter: [number, number] = [-22.9064, -43.5607];
 
   const handleLocateUser = () => {
@@ -130,20 +131,18 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: M
       <MapContainer
         center={[-22.9068, -43.1729]}
         zoom={10}
-        scrollWheelZoom
+        scrollWheelZoom={true}
         style={{ width: "100%", height: "100%" }}
       >
         <TileLayer
-          attribution="&copy; OpenStreetMap"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
         <SetViewOnMount coords={zonaOesteCenter} />
 
-        {/* Evento para ADM adicionar lojas */}
         {isAdmin && onAdminSelect && <AdminAddStoreEvent onSelect={onAdminSelect} />}
 
-        {/* Renderiza lojas cadastradas */}
         {stores.map((store) => (
           <Marker key={store.id} position={[store.latitude, store.longitude]}>
             <Popup>{store.nome}</Popup>
