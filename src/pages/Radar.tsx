@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Store, MapPin, Phone, Clock } from "lucide-react";
+import { ArrowLeft, Store, MapPin, Phone, Clock, Navigation } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -27,10 +27,69 @@ export default function Radar() {
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     fetchStores();
+    getUserLocation();
   }, []);
+
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.log("Erro ao obter localização:", error);
+        }
+      );
+    }
+  };
+
+  // Calcular distância usando fórmula de Haversine
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Raio da Terra em km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // Obter categorias únicas
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(stores.map(s => s.categoria).filter(Boolean)));
+    return ["all", ...cats];
+  }, [stores]);
+
+  // Filtrar e ordenar lojas
+  const filteredAndSortedStores = useMemo(() => {
+    let filtered = stores;
+    
+    // Filtrar por categoria
+    if (selectedCategory !== "all") {
+      filtered = stores.filter(s => s.categoria === selectedCategory);
+    }
+
+    // Ordenar por proximidade se tiver localização do usuário
+    if (userLocation) {
+      filtered = [...filtered].sort((a, b) => {
+        const distA = calculateDistance(userLocation.lat, userLocation.lng, a.latitude, a.longitude);
+        const distB = calculateDistance(userLocation.lat, userLocation.lng, b.latitude, b.longitude);
+        return distA - distB;
+      });
+    }
+
+    return filtered;
+  }, [stores, selectedCategory, userLocation]);
 
   const fetchStores = async () => {
     try {
@@ -72,6 +131,22 @@ export default function Radar() {
     }
   };
 
+  const getStoreDistance = (store: Store) => {
+    if (!userLocation) return null;
+    const distance = calculateDistance(
+      userLocation.lat,
+      userLocation.lng,
+      store.latitude,
+      store.longitude
+    );
+    return distance < 1 ? `${(distance * 1000).toFixed(0)}m` : `${distance.toFixed(1)}km`;
+  };
+
+  const handleNavigateToStore = (store: Store) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`;
+    window.open(url, '_blank');
+  };
+
   const handleStoreClick = (store: Store) => {
     setSelectedStore(store);
     setDetailsOpen(true);
@@ -93,7 +168,7 @@ export default function Radar() {
             </Button>
             <div>
               <h1 className="text-xl font-bold">Radar de Preços</h1>
-              <p className="text-xs text-white/80">{stores.length} comércios cadastrados</p>
+              <p className="text-xs text-white/80">{filteredAndSortedStores.length} de {stores.length} comércios</p>
             </div>
           </div>
         </div>
@@ -108,17 +183,33 @@ export default function Radar() {
           <>
             {/* Mapa com busca e lojas */}
             <div className="px-4 pt-4">
-              <MapRadar stores={stores} onStoreClick={handleStoreClick} />
+              <MapRadar stores={filteredAndSortedStores} onStoreClick={handleStoreClick} />
+            </div>
+
+            {/* Filtros de categoria */}
+            <div className="px-4 pt-4">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                {categories.map((cat) => (
+                  <Badge
+                    key={cat}
+                    variant={selectedCategory === cat ? "default" : "outline"}
+                    className="cursor-pointer whitespace-nowrap transition-all"
+                    onClick={() => setSelectedCategory(cat)}
+                  >
+                    {cat === "all" ? "Todos" : cat}
+                  </Badge>
+                ))}
+              </div>
             </div>
 
             {/* Stores List */}
             <div className="px-4 py-4 space-y-3">
               <h2 className="font-bold text-lg flex items-center gap-2 mb-4 text-foreground">
                 <Store className="h-5 w-5 text-primary" />
-                Comércios Cadastrados
+                Comércios {userLocation && "por Proximidade"}
               </h2>
 
-              {stores.length === 0 ? (
+              {filteredAndSortedStores.length === 0 ? (
                 <Card className="rounded-xl border border-border/50 shadow-sm">
                   <CardContent className="p-6 text-center">
                     <Store className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
@@ -129,7 +220,7 @@ export default function Radar() {
                 </Card>
               ) : (
                 <div className="space-y-3">
-                  {stores.map((store) => (
+                  {filteredAndSortedStores.map((store) => (
                     <Card
                       key={store.id}
                       className="cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 rounded-xl border border-border/50 shadow-sm"
@@ -145,9 +236,16 @@ export default function Radar() {
                               {store.nome}
                             </h3>
                             <div className="space-y-1">
-                              <Badge variant="secondary" className="text-xs">
-                                {store.categoria}
-                              </Badge>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  {store.categoria}
+                                </Badge>
+                                {userLocation && (
+                                  <Badge variant="outline" className="text-xs">
+                                    📍 {getStoreDistance(store)}
+                                  </Badge>
+                                )}
+                              </div>
                               <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                 <MapPin className="h-3.5 w-3.5" />
                                 <span className="truncate">{store.endereco}</span>
@@ -178,7 +276,7 @@ export default function Radar() {
 
       {/* Store Details Dialog */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] z-[9999]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Store className="h-5 w-5 text-primary" />
@@ -222,20 +320,45 @@ export default function Radar() {
                     </div>
                   </div>
                 )}
+
+                {userLocation && selectedStore && (
+                  <div className="flex items-start gap-3 pt-2 border-t border-border">
+                    <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground mb-1">Distância</p>
+                      <p className="text-sm text-muted-foreground">{getStoreDistance(selectedStore)}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="pt-4 border-t">
-                <Button 
-                  className="w-full" 
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  className="flex-1"
                   onClick={() => {
-                    window.open(
-                      `https://www.google.com/maps/dir/?api=1&destination=${selectedStore.latitude},${selectedStore.longitude}`,
-                      '_blank'
-                    );
+                    if (selectedStore) {
+                      window.open(
+                        `https://www.google.com/maps/search/?api=1&query=${selectedStore.latitude},${selectedStore.longitude}`,
+                        '_blank'
+                      );
+                    }
                   }}
                 >
-                  <MapPin className="h-4 w-4 mr-2" />
+                  <MapPin className="mr-2 h-4 w-4" />
                   Ver no Mapa
+                </Button>
+
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    if (selectedStore) {
+                      handleNavigateToStore(selectedStore);
+                    }
+                  }}
+                >
+                  <Navigation className="mr-2 h-4 w-4" />
+                  Ir para Loja
                 </Button>
               </div>
             </div>
