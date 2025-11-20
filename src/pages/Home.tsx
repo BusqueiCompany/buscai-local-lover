@@ -172,52 +172,59 @@ export default function Home() {
 
   return (
     <div className="min-h-screen pb-20 bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="max-w-lg mx-auto px-4 py-3">
-          {/* Endereço */}
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <MapPin className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">
-              {activeAddress 
-                ? `${activeAddress.endereco}, ${activeAddress.numero} - ${activeAddress.bairro}`
-                : 'Endereço não cadastrado'}
-            </span>
-              <Button 
-                variant="link" 
-                size="sm" 
-                className="text-xs text-primary p-0 h-auto"
-                onClick={() => setIsAddressSelectorOpen(true)}
-              >
-                Trocar
-              </Button>
-          </div>
+      {/* Header com gradiente verde para branco */}
+      <header className="sticky top-0 z-40 shadow-sm gradient-header">
+        {/* Address Bar */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/20">
+          <button 
+            onClick={() => setIsAddressSelectorOpen(true)}
+            className="flex items-center gap-2 text-sm hover:opacity-80 transition-opacity flex-1"
+          >
+            <MapPin className="h-4 w-4 text-white flex-shrink-0" />
+            <div className="text-left flex-1 min-w-0">
+              <div className="text-xs text-white/80">Entregar em</div>
+              <div className="font-medium truncate text-white">
+                {activeAddress 
+                  ? `${activeAddress.endereco}, ${activeAddress.numero}${activeAddress.bairro ? ` - ${activeAddress.bairro}` : ''}`
+                  : profile?.endereco 
+                    ? `${profile.endereco}${profile.numero ? `, ${profile.numero}` : ''}${profile.bairro ? ` - ${profile.bairro}` : ''}`
+                    : 'Adicionar endereço'
+                }
+              </div>
+            </div>
+          </button>
+          <NotificationBell />
+        </div>
 
-          {/* Perfil e Notificações */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12 border-2 border-primary">
-                <AvatarImage src="" />
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {profile?.nome_completo?.charAt(0) || user?.email?.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">
-                    {profile?.nome_completo?.split(" ")[0] || user?.email?.split("@")[0] || "Usuário"}
-                  </span>
-                  {userRole === "VIP" && (
-                    <Badge className={`gradient-vip-${vipLevel} text-white text-xs px-2 py-0`}>
-                      {vipLevel.toUpperCase()}
-                    </Badge>
-                  )}
-                  {userRole === "SUPORTE" && (
-                    <Badge className="bg-blue-600 text-white text-xs px-2 py-0">
-                      SUPORTE
-                    </Badge>
-                  )}
-                </div>
+        {/* User Profile Section - transição para branco */}
+        <div className="px-4 py-4 flex items-center justify-between bg-white/95">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-12 w-12 border-2 border-primary/20">
+              <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.nome_completo || 'user'}`} />
+              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                {profile?.nome_completo?.charAt(0).toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-semibold text-foreground">
+                  {profile?.nome_completo || 'Usuário'}
+                </h2>
+                {userRole === "VIP" && (
+                  <Badge className={`gradient-vip-${vipLevel} text-white text-xs px-2 py-0`}>
+                    {vipLevel.toUpperCase()}
+                  </Badge>
+                )}
+                {userRole === "SUPORTE" && (
+                  <Badge className="bg-blue-600 text-white text-xs px-2 py-0">
+                    SUPORTE
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">
+                  {userRole === 'VIP' ? '⭐ Membro VIP' : 'Membro Free'}
+                </p>
                 {userRole === "VIP" && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Sparkles className="h-3 w-3 text-accent" />
@@ -226,32 +233,31 @@ export default function Home() {
                 )}
               </div>
             </div>
+          </div>
 
-            <div className="flex items-center gap-2">
-              {isAdmin && (
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => navigate("/admin/dashboard")}
-                  className="text-red-700"
-                >
-                  <Shield className="h-5 w-5" />
-                </Button>
-              )}
-              <NotificationBell />
-              <Button
-                size="sm"
-                className="gradient-vip-gold text-white font-semibold flex items-center gap-1"
-                onClick={() => navigate("/vip")}
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate("/admin/dashboard")}
+                className="text-red-700"
               >
-                VIP 💎
+                <Shield className="h-5 w-5" />
               </Button>
-            </div>
+            )}
+            <Button
+              size="sm"
+              className="gradient-vip-gold text-white font-semibold"
+              onClick={() => navigate("/vip")}
+            >
+              VIP 💎
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-lg mx-auto px-4 py-6 space-y-6 bg-card">
         {/* Grade de Menus 4x2 */}
         <div className="grid grid-cols-4 gap-2">
           {menuItems.map((item, index) => {
