@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,17 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Pencil, MapPin } from "lucide-react";
+import { LoadScript, GoogleMap, Marker, Autocomplete } from "@react-google-maps/api";
+
+const libraries: ("places")[] = ["places"];
+const mapContainerStyle = {
+  width: "100%",
+  height: "400px",
+};
+const defaultCenter = {
+  lat: -23.550520,
+  lng: -46.633308,
+};
 
 interface Loja {
   id: string;
@@ -38,6 +49,14 @@ export default function GerenciarLojas() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLoja, setEditingLoja] = useState<Loja | null>(null);
+  const [mapCenter, setMapCenter] = useState(defaultCenter);
+  const [markerPosition, setMarkerPosition] = useState(defaultCenter);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const [formData, setFormData] = useState({
+    latitude: "",
+    longitude: "",
+    endereco: "",
+  });
 
   useEffect(() => {
     if (!authLoading && !isAdmin) {
@@ -128,12 +147,59 @@ export default function GerenciarLojas() {
 
   const openEditDialog = (loja: Loja) => {
     setEditingLoja(loja);
+    const lat = loja.latitude ?? defaultCenter.lat;
+    const lng = loja.longitude ?? defaultCenter.lng;
+    setMapCenter({ lat, lng });
+    setMarkerPosition({ lat, lng });
+    setFormData({
+      latitude: loja.latitude?.toString() || "",
+      longitude: loja.longitude?.toString() || "",
+      endereco: loja.endereco || "",
+    });
     setDialogOpen(true);
   };
 
   const closeDialog = () => {
     setDialogOpen(false);
     setEditingLoja(null);
+    setMapCenter(defaultCenter);
+    setMarkerPosition(defaultCenter);
+    setFormData({
+      latitude: "",
+      longitude: "",
+      endereco: "",
+    });
+  };
+
+  const handlePlaceSelect = () => {
+    if (autocompleteRef.current) {
+      const place = autocompleteRef.current.getPlace();
+      if (place.geometry?.location) {
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        setMapCenter({ lat, lng });
+        setMarkerPosition({ lat, lng });
+        setFormData(prev => ({
+          ...prev,
+          latitude: lat.toString(),
+          longitude: lng.toString(),
+          endereco: place.formatted_address || prev.endereco,
+        }));
+      }
+    }
+  };
+
+  const handleMarkerDragEnd = (e: google.maps.MapMouseEvent) => {
+    if (e.latLng) {
+      const lat = e.latLng.lat();
+      const lng = e.latLng.lng();
+      setMarkerPosition({ lat, lng });
+      setFormData(prev => ({
+        ...prev,
+        latitude: lat.toString(),
+        longitude: lng.toString(),
+      }));
+    }
   };
 
   if (loading || authLoading) {
@@ -164,7 +230,19 @@ export default function GerenciarLojas() {
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#1976D2] hover:bg-[#1565C0]" onClick={() => setEditingLoja(null)}>
+              <Button 
+                className="bg-[#1976D2] hover:bg-[#1565C0]" 
+                onClick={() => {
+                  setEditingLoja(null);
+                  setMapCenter(defaultCenter);
+                  setMarkerPosition(defaultCenter);
+                  setFormData({
+                    latitude: "",
+                    longitude: "",
+                    endereco: "",
+                  });
+                }}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Loja
               </Button>
@@ -173,26 +251,37 @@ export default function GerenciarLojas() {
               <DialogHeader>
                 <DialogTitle>{editingLoja ? "Editar Loja" : "Cadastrar Nova Loja"}</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="nome">Nome da Loja *</Label>
-                  <Input
-                    id="nome"
-                    name="nome"
-                    defaultValue={editingLoja?.nome}
-                    required
-                  />
-                </div>
+              <LoadScript
+                googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+                libraries={libraries}
+              >
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="nome">Nome da Loja *</Label>
+                    <Input
+                      id="nome"
+                      name="nome"
+                      defaultValue={editingLoja?.nome}
+                      required
+                    />
+                  </div>
 
-                <div>
-                  <Label htmlFor="endereco">Endereço *</Label>
-                  <Input
-                    id="endereco"
-                    name="endereco"
-                    defaultValue={editingLoja?.endereco}
-                    required
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="endereco">Endereço *</Label>
+                    <Autocomplete
+                      onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+                      onPlaceChanged={handlePlaceSelect}
+                    >
+                      <Input
+                        id="endereco"
+                        name="endereco"
+                        value={formData.endereco}
+                        onChange={(e) => setFormData(prev => ({ ...prev, endereco: e.target.value }))}
+                        placeholder="Digite o endereço e selecione uma opção"
+                        required
+                      />
+                    </Autocomplete>
+                  </div>
 
                 <div>
                   <Label htmlFor="categoria_id">Categoria</Label>
@@ -242,6 +331,27 @@ export default function GerenciarLojas() {
                   />
                 </div>
 
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Localização no Mapa
+                  </Label>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Arraste o pin para a localização exata ou busque pelo endereço acima
+                  </p>
+                  <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={mapCenter}
+                    zoom={15}
+                  >
+                    <Marker
+                      position={markerPosition}
+                      draggable={true}
+                      onDragEnd={handleMarkerDragEnd}
+                    />
+                  </GoogleMap>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="latitude">Latitude</Label>
@@ -250,7 +360,8 @@ export default function GerenciarLojas() {
                       name="latitude"
                       type="number"
                       step="0.00000001"
-                      defaultValue={editingLoja?.latitude || ""}
+                      value={formData.latitude}
+                      onChange={(e) => setFormData(prev => ({ ...prev, latitude: e.target.value }))}
                       placeholder="-22.9035"
                     />
                   </div>
@@ -262,7 +373,8 @@ export default function GerenciarLojas() {
                       name="longitude"
                       type="number"
                       step="0.00000001"
-                      defaultValue={editingLoja?.longitude || ""}
+                      value={formData.longitude}
+                      onChange={(e) => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
                       placeholder="-43.2096"
                     />
                   </div>
@@ -272,11 +384,12 @@ export default function GerenciarLojas() {
                   <Button type="submit" className="flex-1 bg-[#1976D2] hover:bg-[#1565C0]">
                     {editingLoja ? "Atualizar" : "Cadastrar"}
                   </Button>
-                  <Button type="button" variant="outline" onClick={closeDialog}>
+                  <Button type="button" variant="outline" onClick={closeDialog} className="flex-1">
                     Cancelar
                   </Button>
                 </div>
               </form>
+              </LoadScript>
             </DialogContent>
           </Dialog>
         </div>
