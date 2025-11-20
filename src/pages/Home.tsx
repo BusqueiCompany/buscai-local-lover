@@ -253,7 +253,7 @@ export default function Home() {
                   </div>
                 )}
                 {item.label === "Lanches" ? (
-                  <img src={lanchesIcon} alt="Lanches" className="w-12 h-12 object-cover rounded-full" />
+                  <img src={lanchesIcon} alt="Lanches" className="w-14 h-14 object-cover rounded-full" />
                 ) : (
                   <IconComponent className={`w-8 h-8 ${item.color}`} strokeWidth={1.8} />
                 )}
