@@ -60,6 +60,12 @@ export default function PainelEntregador() {
   const [localizacao, setLocalizacao] = useState<{ lat: number; lng: number } | null>(null);
   const [obsEntregador, setObsEntregador] = useState("");
   const [uploadingFoto, setUploadingFoto] = useState(false);
+  
+  // Novos estados para GPS
+  const [permissaoGPS, setPermissaoGPS] = useState<'nao_solicitada' | 'solicitando' | 'concedida' | 'negada'>('nao_solicitada');
+  const [precisaoGPS, setPrecisaoGPS] = useState<number>(0);
+  const [watchId, setWatchId] = useState<number | null>(null);
+  const [tentativasReconexao, setTentativasReconexao] = useState(0);
 
   useEffect(() => {
     if (!loading && userRole !== "ENTREGADOR") {
@@ -72,9 +78,16 @@ export default function PainelEntregador() {
     if (userRole === "ENTREGADOR" && user) {
       fetchPedidoAtual();
       fetchParametros();
-      iniciarMonitoramentoGPS();
     }
   }, [userRole, user]);
+
+  useEffect(() => {
+    return () => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+  }, [watchId]);
 
   useEffect(() => {
     if (pedidoAtual?.inicio_coleta && pedidoAtual.status === 'coletando') {
@@ -85,23 +98,88 @@ export default function PainelEntregador() {
     }
   }, [pedidoAtual]);
 
-  const iniciarMonitoramentoGPS = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.watchPosition(
-        (position) => {
-          setGpsAtivo(true);
-          setLocalizacao({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => {
-          setGpsAtivo(false);
-          toast.error("GPS desativado - ative para continuar");
-        },
-        { enableHighAccuracy: true }
-      );
+  const solicitarPermissaoGPS = async () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Seu dispositivo não suporta GPS");
+      return;
     }
+
+    setPermissaoGPS('solicitando');
+    
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
+      
+      iniciarMonitoramentoContinuo();
+      setPermissaoGPS('concedida');
+      toast.success("GPS ativado com sucesso!");
+      
+    } catch (error: any) {
+      setPermissaoGPS('negada');
+      if (error.code === 1) {
+        toast.error("Permissão GPS negada. Por favor, ative nas configurações do navegador.");
+      } else if (error.code === 2) {
+        toast.error("GPS indisponível. Verifique se a localização está ativada no dispositivo.");
+      } else {
+        toast.error("Erro ao obter localização. Tente novamente.");
+      }
+    }
+  };
+
+  const iniciarMonitoramentoContinuo = () => {
+    if (!("geolocation" in navigator)) return;
+    
+    const id = navigator.geolocation.watchPosition(
+      (position) => {
+        setGpsAtivo(true);
+        setPermissaoGPS('concedida');
+        setLocalizacao({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setPrecisaoGPS(Math.round(position.coords.accuracy));
+        setTentativasReconexao(0);
+        
+        if (position.coords.accuracy > 50) {
+          toast.warning(`GPS com precisão baixa: ${Math.round(position.coords.accuracy)}m`, {
+            duration: 3000
+          });
+        }
+      },
+      (error) => {
+        setGpsAtivo(false);
+        console.error("Erro GPS:", error);
+        
+        if (tentativasReconexao < 3) {
+          setTimeout(() => {
+            setTentativasReconexao(prev => prev + 1);
+            toast.info(`Tentando reconectar GPS... (${tentativasReconexao + 1}/3)`);
+            iniciarMonitoramentoContinuo();
+          }, 5000);
+        } else {
+          toast.error("GPS desativado - ative para continuar");
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
+    
+    setWatchId(id);
+  };
+
+  const iniciarMonitoramentoGPS = () => {
+    if (permissaoGPS === 'nao_solicitada') {
+      return;
+    }
+    iniciarMonitoramentoContinuo();
   };
 
   const fetchPedidoAtual = async () => {
@@ -227,6 +305,11 @@ export default function PainelEntregador() {
   const handleChegueiNaLoja = async () => {
     if (!pedidoAtual || !localizacao || !parametros) return;
     
+    if (!gpsAtivo) {
+      toast.error("GPS inativo. Por favor, ative a localização.");
+      return;
+    }
+    
     if (!pedidoAtual.loja_lat || !pedidoAtual.loja_lng) {
       toast.error("Coordenadas da loja não disponíveis");
       return;
@@ -254,7 +337,15 @@ export default function PainelEntregador() {
         })
         .eq("id", pedidoAtual.id);
       
-      await registrarLog("chegada_loja", `Check-in realizado a ${Math.round(distancia)}m da loja`);
+      const gpsData = {
+        lat: localizacao.lat,
+        lng: localizacao.lng,
+        precisao_metros: precisaoGPS,
+        distancia_loja_metros: Math.round(distancia),
+        timestamp: new Date().toISOString()
+      };
+      
+      await registrarLog("chegada_loja", JSON.stringify(gpsData));
       toast.success("Check-in realizado com sucesso!");
       await fetchPedidoAtual();
     } catch (error) {
@@ -491,25 +582,91 @@ export default function PainelEntregador() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 border-2 border-primary-foreground/30">
-              <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground font-semibold">
-                {getNomeUsuario().charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="text-left">
-              <div className="font-semibold text-sm">{getNomeUsuario()}</div>
-              <div className="flex items-center gap-1 text-xs">
-                <div className={`w-2 h-2 rounded-full ${gpsAtivo ? 'bg-green-400' : 'bg-red-400'}`} />
-                {gpsAtivo ? 'GPS Ativo' : 'GPS Inativo'}
+          <div className="flex flex-col items-center">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 border-2 border-primary-foreground/30">
+                <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground font-semibold">
+                  {getNomeUsuario().charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="text-left">
+                <div className="font-semibold text-sm">{getNomeUsuario()}</div>
               </div>
             </div>
+            <Badge 
+              variant={gpsAtivo ? "default" : "destructive"} 
+              className={`mt-2 ${gpsAtivo ? "animate-pulse bg-green-500" : "bg-red-500"}`}
+            >
+              <MapPin className="w-3 h-3 mr-1" />
+              {gpsAtivo ? `GPS ATIVO (±${precisaoGPS}m)` : "GPS INATIVO"}
+            </Badge>
           </div>
+          
+          <div className="w-10" />
         </div>
       </div>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        {!pedidoAtual ? (
+        {permissaoGPS === 'nao_solicitada' && (
+          <Card className="border-2 border-primary shadow-lg p-6 text-center bg-card">
+            <MapPin className="w-16 h-16 mx-auto mb-4 text-primary animate-bounce" />
+            <h3 className="text-xl font-bold mb-2">
+              Precisamos da sua localização em tempo real
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              Para garantir que você está realmente nas lojas e validar suas entregas,
+              precisamos acessar sua localização continuamente durante o pedido.
+            </p>
+            <Button 
+              size="lg" 
+              onClick={solicitarPermissaoGPS}
+              className="w-full"
+            >
+              <MapPin className="mr-2" />
+              Ativar Localização
+            </Button>
+          </Card>
+        )}
+
+        {permissaoGPS === 'solicitando' && (
+          <Card className="border-2 border-primary shadow-lg p-6 text-center bg-card">
+            <MapPin className="w-16 h-16 mx-auto mb-4 text-primary animate-spin" />
+            <h3 className="text-xl font-bold mb-2">
+              Solicitando permissão GPS...
+            </h3>
+            <p className="text-muted-foreground">
+              Por favor, aceite a permissão no navegador
+            </p>
+          </Card>
+        )}
+
+        {permissaoGPS === 'negada' && (
+          <Card className="border-2 border-destructive shadow-lg p-6 bg-card">
+            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-destructive" />
+            <h3 className="text-lg font-bold mb-2 text-center">
+              Permissão GPS Negada
+            </h3>
+            <p className="text-muted-foreground mb-4 text-sm">
+              Para usar o painel do entregador, você precisa permitir o acesso à localização.
+            </p>
+            <div className="space-y-2 mb-4 text-sm">
+              <p className="font-semibold">Como ativar:</p>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <li><strong>Android Chrome:</strong> Configurações → Apps → Chrome → Permissões → Localização</li>
+                <li><strong>iPhone Safari:</strong> Ajustes → Safari → Localização → Permitir</li>
+                <li><strong>Desktop:</strong> Clique no ícone de cadeado na barra de endereço → Permissões → Localização</li>
+              </ul>
+            </div>
+            <Button 
+              onClick={solicitarPermissaoGPS}
+              className="w-full"
+            >
+              Tentar Novamente
+            </Button>
+          </Card>
+        )}
+
+        {!pedidoAtual && permissaoGPS === 'concedida' ? (
           <Card className="p-8 text-center">
             <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
             <h2 className="text-xl font-semibold mb-2">Nenhum pedido ativo</h2>
@@ -565,22 +722,36 @@ export default function PainelEntregador() {
                 <Button 
                   className="w-full" 
                   onClick={handleIndoParaLoja}
-                  disabled={loadingAction}
+                  disabled={loadingAction || !gpsAtivo}
                 >
+                  {!gpsAtivo && <AlertCircle className="mr-2 h-4 w-4" />}
                   <Truck className="mr-2 h-4 w-4" />
                   Indo para a loja
                 </Button>
               )}
+              {!gpsAtivo && pedidoAtual.status === "atribuido" && (
+                <p className="text-sm text-destructive text-center">
+                  ⚠️ Ative o GPS para continuar
+                </p>
+              )}
 
               {pedidoAtual.status === "indo" && (
-                <Button 
-                  className="w-full" 
-                  onClick={handleChegueiNaLoja}
-                  disabled={loadingAction || !gpsAtivo}
-                >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Cheguei na loja
-                </Button>
+                <>
+                  <Button 
+                    className="w-full" 
+                    onClick={handleChegueiNaLoja}
+                    disabled={loadingAction || !gpsAtivo}
+                  >
+                    {!gpsAtivo && <AlertCircle className="mr-2 h-4 w-4" />}
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Cheguei na loja
+                  </Button>
+                  {!gpsAtivo && (
+                    <p className="text-sm text-destructive text-center">
+                      ⚠️ Ative o GPS para continuar
+                    </p>
+                  )}
+                </>
               )}
 
               {pedidoAtual.status === "chegou_loja" && (
