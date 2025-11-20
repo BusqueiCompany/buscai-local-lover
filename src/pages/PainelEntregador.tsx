@@ -50,8 +50,9 @@ interface Parametros {
 }
 
 export default function PainelEntregador() {
-  const { user, userRole, loading } = useAuth();
+  const { user, userRole, loading, refreshUserRole } = useAuth();
   const navigate = useNavigate();
+  const [verificouPermissao, setVerificouPermissao] = useState(false);
   const [pedidoAtual, setPedidoAtual] = useState<Pedido | null>(null);
   const [parametros, setParametros] = useState<Parametros | null>(null);
   const [timerSegundos, setTimerSegundos] = useState(0);
@@ -68,11 +69,22 @@ export default function PainelEntregador() {
   const [tentativasReconexao, setTentativasReconexao] = useState(0);
 
   useEffect(() => {
-    if (!loading && userRole !== "ENTREGADOR" && userRole !== "ADMINISTRADOR") {
-      navigate("/");
-      toast.error("Acesso negado - apenas entregadores");
-    }
-  }, [userRole, loading, navigate]);
+    const verificarPermissao = async () => {
+      if (!loading && userRole !== "ENTREGADOR" && userRole !== "ADMINISTRADOR") {
+        // Tentar atualizar a role uma vez antes de negar acesso
+        if (!verificouPermissao) {
+          setVerificouPermissao(true);
+          await refreshUserRole();
+        } else {
+          // Após tentar atualizar, se ainda não tem permissão, redirecionar
+          navigate("/");
+          toast.error("Acesso negado - apenas entregadores");
+        }
+      }
+    };
+    
+    verificarPermissao();
+  }, [userRole, loading, navigate, verificouPermissao, refreshUserRole]);
 
   useEffect(() => {
     if (userRole === "ENTREGADOR" || userRole === "ADMINISTRADOR") {

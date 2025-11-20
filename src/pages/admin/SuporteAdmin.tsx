@@ -310,6 +310,42 @@ export default function SuporteAdmin() {
 
       if (error) throw error;
 
+      // Se aprovando solicitação de entregador, criar role ENTREGADOR
+      if (type === "delivery" && newStatus === "aprovado" && request) {
+        // Verificar se já tem a role
+        const { data: existingRole } = await supabase
+          .from("user_roles")
+          .select("id")
+          .eq("user_id", request.user_id)
+          .eq("role", "ENTREGADOR")
+          .maybeSingle();
+
+        // Criar role se não existir
+        if (!existingRole) {
+          const { error: roleError } = await supabase
+            .from("user_roles")
+            .insert({
+              user_id: request.user_id,
+              role: "ENTREGADOR"
+            });
+
+          if (roleError) {
+            console.error("Erro ao criar role:", roleError);
+            toast.error("Solicitação aprovada, mas erro ao criar permissões. Entre em contato com suporte.");
+          }
+        }
+
+        // Ativar o perfil do usuário
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ is_active: true })
+          .eq("id", request.user_id);
+
+        if (profileError) {
+          console.error("Erro ao ativar perfil:", profileError);
+        }
+      }
+
       // Log de auditoria
       await logAdminAction(
         user!.id,
@@ -322,11 +358,15 @@ export default function SuporteAdmin() {
 
       // Criar notificação
       if (request) {
+        const message = newStatus === "aprovado" && type === "delivery"
+          ? "Sua solicitação de entregador foi aprovada! Faça logout e login novamente para acessar o painel."
+          : `Sua solicitação de ${type === "partnership" ? "parceria" : "entregador"} foi ${newStatus}`;
+
         await supabase.from("notifications").insert({
           user_id: request.user_id,
           type: `${type}_response`,
           title: `Solicitação ${newStatus}`,
-          message: `Sua solicitação de ${type === "partnership" ? "parceria" : "entregador"} foi ${newStatus}`,
+          message: message,
           reference_id: requestId,
           reference_type: type,
         });
