@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   DollarSign,
   FileText,
+  Home,
 } from "lucide-react";
 
 interface MenuItem {
@@ -30,6 +31,7 @@ const menuSections: MenuSection[] = [
   {
     title: "Visão Geral",
     items: [
+      { title: "Inicio", href: "/", icon: Home },
       { title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
     ],
   },
