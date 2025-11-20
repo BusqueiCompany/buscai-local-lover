@@ -23,6 +23,7 @@ import { FloatingActionButton } from "@/components/ui/fab";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { AddressSelector } from "@/components/AddressSelector";
 import banner1 from "@/assets/banner-1.png";
 import banner2 from "@/assets/banner-2.png";
 
@@ -43,6 +44,8 @@ export default function Home() {
   const [profile, setProfile] = useState<any>(null);
   const [vipLevel] = useState<"bronze" | "gold" | "diamond">("bronze");
   const [points] = useState(1250);
+  const [activeAddress, setActiveAddress] = useState<any>(null);
+  const [isAddressSelectorOpen, setIsAddressSelectorOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -53,6 +56,7 @@ export default function Home() {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchActiveAddress();
     }
   }, [user]);
 
@@ -66,6 +70,19 @@ export default function Home() {
     if (data) {
       setProfile(data);
     }
+  };
+
+  const fetchActiveAddress = async () => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("user_addresses")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    setActiveAddress(data);
   };
 
   const getUserLevelNumber = () => {
@@ -107,15 +124,15 @@ export default function Home() {
           <div className="flex items-center justify-center gap-2 mb-3">
             <MapPin className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium">
-              {profile?.endereco && profile?.numero 
-                ? `${profile.endereco}, ${profile.numero} - ${profile.bairro || 'Não informado'}`
+              {activeAddress 
+                ? `${activeAddress.endereco}, ${activeAddress.numero} - ${activeAddress.bairro}`
                 : 'Endereço não cadastrado'}
             </span>
             <Button 
               variant="link" 
               size="sm" 
               className="text-xs text-primary p-0 h-auto"
-              onClick={() => navigate("/perfil")}
+              onClick={() => setIsAddressSelectorOpen(true)}
             >
               Trocar
             </Button>
@@ -271,6 +288,13 @@ export default function Home() {
       <FloatingActionButton />
 
       <BottomNav />
+
+      {/* Address Selector Sheet */}
+      <AddressSelector
+        isOpen={isAddressSelectorOpen}
+        onClose={() => setIsAddressSelectorOpen(false)}
+        onAddressChange={fetchActiveAddress}
+      />
     </div>
   );
 }
