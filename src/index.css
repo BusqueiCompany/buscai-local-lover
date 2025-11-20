@@ -17,8 +17,8 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 15%;
 
-    /* Laranja vibrante principal - inspirado iFood */
-    --primary: 14 100% 60%;
+    /* Verde esmeralda principal */
+    --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
     
     /* Vermelho suave para destaques */
@@ -37,7 +37,7 @@ All colors MUST be HSL.
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 14 100% 60%;
+    --ring: 160 84% 39%;
 
     --radius: 1rem;
 
@@ -56,7 +56,7 @@ All colors MUST be HSL.
     --radar-title: 0 0% 10%;
     
     /* Gradient definitions */
-    --gradient-primary: linear-gradient(135deg, hsl(14 100% 60%) 0%, hsl(355 85% 55%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(160 84% 30%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 71% 45%) 100%);
     --gradient-vip-bronze: linear-gradient(135deg, hsl(30 60% 50%) 0%, hsl(25 70% 40%) 100%);
     --gradient-vip-gold: linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(38 92% 50%) 100%);
@@ -64,16 +64,16 @@ All colors MUST be HSL.
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --shadow-glow: 0 0 20px hsl(14 100% 60% / 0.3);
+    --shadow-glow: 0 0 20px hsl(160 84% 39% / 0.3);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 15%;
-    --sidebar-primary: 14 100% 60%;
+    --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 95%;
     --sidebar-accent-foreground: 0 0% 15%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 14 100% 60%;
+    --sidebar-ring: 160 84% 39%;
   }
 
   .dark {
@@ -86,7 +86,7 @@ All colors MUST be HSL.
     --popover: 0 0% 12%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 14 100% 60%;
+    --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 355 85% 55%;
@@ -103,16 +103,16 @@ All colors MUST be HSL.
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 14 100% 60%;
+    --ring: 160 84% 39%;
 
     --sidebar-background: 0 0% 10%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 14 100% 60%;
+    --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 18%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 14 100% 60%;
+    --sidebar-ring: 160 84% 39%;
   }
 }
 
