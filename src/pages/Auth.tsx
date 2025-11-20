@@ -225,7 +225,7 @@ export default function Auth() {
               <img 
                 src={logo} 
                 alt="BUSQUEI" 
-                className="h-32 w-32 object-contain relative z-10 animate-float drop-shadow-2xl" 
+                className="h-48 w-48 object-contain relative z-10 animate-float drop-shadow-2xl rounded-3xl" 
               />
             </div>
           </div>
