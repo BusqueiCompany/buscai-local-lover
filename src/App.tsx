@@ -20,6 +20,8 @@ import ImportarLojas from "./pages/admin/ImportarLojas";
 import GerenciarLojas from "./pages/admin/GerenciarLojas";
 import GerenciarProdutos from "./pages/admin/GerenciarProdutos";
 import AtualizarPrecos from "./pages/admin/AtualizarPrecos";
+import GerenciarPedidos from "./pages/admin/GerenciarPedidos";
+import PainelEntregador from "./pages/PainelEntregador";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +48,8 @@ const App = () => (
             <Route path="/admin/lojas" element={<GerenciarLojas />} />
             <Route path="/admin/produtos" element={<GerenciarProdutos />} />
             <Route path="/admin/precos" element={<AtualizarPrecos />} />
+            <Route path="/admin/pedidos" element={<GerenciarPedidos />} />
+            <Route path="/entregador" element={<PainelEntregador />} />
             
             {/* Placeholder routes */}
             <Route path="/buscar" element={<Placeholder />} />

@@ -60,6 +60,13 @@ export default function AdminDashboard() {
       path: "/admin/precos",
       color: "bg-[#FF7A00] hover:bg-[#E66A00]",
     },
+    {
+      title: "Gerenciar Pedidos",
+      description: "Ver pedidos de entregadores e ajustar parâmetros",
+      icon: Package,
+      path: "/admin/pedidos",
+      color: "bg-[#1976D2] hover:bg-[#1565C0]",
+    },
   ];
 
   if (loading) {
