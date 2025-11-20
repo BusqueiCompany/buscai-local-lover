@@ -3,18 +3,16 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "re
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Corrige ícones do Leaflet no React (apenas uma vez)
-if ((L.Icon.Default.prototype as any)._getIconUrl) {
-  delete (L.Icon.Default.prototype as any)._getIconUrl;
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-    iconUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-    shadowUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  });
-}
+// Corrige ícones do Leaflet no React
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+});
 
 interface Store {
   id: string;
@@ -32,13 +30,9 @@ interface MapRJProps {
 // Foco inicial na Zona Oeste
 function SetViewOnMount({ coords }: { coords: [number, number] }) {
   const map = useMap();
-  
   useEffect(() => {
     map.setView(coords, 12);
-    // Salvar referência global do mapa
-    (window as any)._leaflet_map = map;
   }, [coords, map]);
-  
   return null;
 }
 
@@ -58,7 +52,6 @@ function AdminAddStoreEvent({ onSelect }: { onSelect?: (coords: { lat: number; l
 }
 
 export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: MapRJProps) {
-  console.log("MapRJ carregado", { stores, isAdmin });
   const zonaOesteCenter: [number, number] = [-22.9064, -43.5607];
 
   const handleLocateUser = () => {
@@ -86,7 +79,7 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: M
   };
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
       {/* Botão flutuante "Minha Localização" */}
       <button
         onClick={handleLocateUser}
@@ -101,7 +94,6 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: M
           border: "1px solid #ccc",
           cursor: "pointer",
           fontWeight: "bold",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         }}
       >
         📍 Minha localização
@@ -121,7 +113,6 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: M
             border: "2px solid #ff6b6b",
             fontWeight: "bold",
             color: "#ff6b6b",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
           }}
         >
           🔴 MODO ADMIN - Clique no mapa para adicionar loja
@@ -131,18 +122,25 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: M
       <MapContainer
         center={[-22.9068, -43.1729]}
         zoom={10}
-        scrollWheelZoom={true}
+        scrollWheelZoom
         style={{ width: "100%", height: "100%" }}
+        ref={(map: any) => {
+          if (map) {
+            (window as any)._leaflet_map = map;
+          }
+        }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution="&copy; OpenStreetMap"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
         <SetViewOnMount coords={zonaOesteCenter} />
 
+        {/* Evento para ADM adicionar lojas */}
         {isAdmin && onAdminSelect && <AdminAddStoreEvent onSelect={onAdminSelect} />}
 
+        {/* Renderiza lojas cadastradas */}
         {stores.map((store) => (
           <Marker key={store.id} position={[store.latitude, store.longitude]}>
             <Popup>{store.nome}</Popup>
