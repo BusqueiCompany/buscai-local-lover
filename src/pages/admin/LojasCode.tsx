@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Search, Pencil, Upload, Eye } from "lucide-react";
+import { Search, Pencil, Upload, Eye, Copy } from "lucide-react";
 
 interface Loja {
   id: string;
@@ -79,33 +80,32 @@ export default function LojasCode() {
     return matchesSearch && matchesCategory;
   });
 
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copiado para a área de transferência`);
+  };
+
   if (loading || authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </AdminLayout>
     );
   }
 
+  if (!isAdmin) return null;
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6">
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/admin/dashboard")}
-            className="hover:bg-muted"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Lojas Code</h1>
-            <p className="text-muted-foreground">Visualizar IDs e Serials de todas as lojas</p>
-          </div>
+    <AdminLayout>
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold text-foreground">Lojas Code</h2>
+          <p className="text-muted-foreground">Visualizar IDs e Serials de todas as lojas</p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
@@ -141,14 +141,20 @@ export default function LojasCode() {
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground">ID:</span>
                         <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                          {loja.id}
+                          {loja.id.substring(0, 8)}...
                         </code>
+                        <Button size="sm" variant="ghost" onClick={() => copyToClipboard(loja.id, "ID")}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground">Serial:</span>
                         <Badge variant="outline" className="font-mono">
                           {loja.serial}
                         </Badge>
+                        <Button size="sm" variant="ghost" onClick={() => copyToClipboard(loja.serial, "Serial")}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground">Categoria:</span>
@@ -201,6 +207,6 @@ export default function LojasCode() {
           )}
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

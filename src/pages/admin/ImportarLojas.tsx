@@ -1,365 +1,306 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, AlertCircle } from "lucide-react";
+import { Upload, CheckCircle, XCircle } from "lucide-react";
+import { createAuditLog } from "@/utils/auditLog";
 
-interface ParsedLoja {
-  categoria: string;
+interface LojaPreview {
+  serial?: string;
   nome: string;
+  categoria: string;
   endereco: string;
-  latitude: number | null;
-  longitude: number | null;
-  produtos: Array<{
-    nome: string;
-    preco: number;
-  }>;
+  latitude?: number;
+  longitude?: number;
+  telefone?: string;
+  horario?: string;
+  foto_url?: string;
+  status: string;
+  valid: boolean;
+  error?: string;
 }
 
 export default function ImportarLojas() {
-  const { isAdmin, loading } = useAuth();
+  const { isAdmin } = useAuth();
   const navigate = useNavigate();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [parsedData, setParsedData] = useState<ParsedLoja | null>(null);
-  const [isImporting, setIsImporting] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<LojaPreview[]>([]);
+  const [dryRun, setDryRun] = useState(true);
+  const [importing, setImporting] = useState(false);
+  const [categorias, setCategorias] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (!loading && !isAdmin) {
-      navigate("/");
-      toast.error("Acesso negado");
-    }
-  }, [isAdmin, loading, navigate]);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!file.name.endsWith('.txt')) {
-      toast.error("Por favor, selecione um arquivo .txt");
-      return;
-    }
-
-    setSelectedFile(file);
-    const content = await file.text();
-    parseFile(content);
+    setFile(selectedFile);
+    await parseFile(selectedFile);
   };
 
-  const parseFile = (content: string) => {
-    const lines = content.split('\n').map(line => line.trim()).filter(line => line);
-    const parsed: ParsedLoja = {
-      categoria: '',
-      nome: '',
-      endereco: '',
-      latitude: null,
-      longitude: null,
-      produtos: []
-    };
-    const validationErrors: string[] = [];
+  const parseFile = async (file: File) => {
+    const text = await file.text();
+    const isCSV = file.name.endsWith(".csv");
 
-    let currentProduto: { nome: string; preco: number } | null = null;
+    const { data: categoriasData } = await supabase
+      .from("categorias_lojas")
+      .select("id, nome");
+    
+    const categoriaMap: Record<string, string> = {};
+    categoriasData?.forEach(cat => {
+      categoriaMap[cat.nome.toLowerCase()] = cat.id;
+    });
+    setCategorias(categoriaMap);
 
-    for (const line of lines) {
-      if (line.startsWith('[Categoria]')) {
-        parsed.categoria = line.replace('[Categoria]', '').trim();
-      } else if (line.startsWith('[Nome]')) {
-        parsed.nome = line.replace('[Nome]', '').trim();
-      } else if (line.startsWith('[Endereço]')) {
-        parsed.endereco = line.replace('[Endereço]', '').trim();
-      } else if (line.startsWith('[Lat]')) {
-        const lat = parseFloat(line.replace('[Lat]', '').trim());
-        parsed.latitude = isNaN(lat) ? null : lat;
-      } else if (line.startsWith('[Lng]')) {
-        const lng = parseFloat(line.replace('[Lng]', '').trim());
-        parsed.longitude = isNaN(lng) ? null : lng;
-      } else if (line.startsWith('[Produto]')) {
-        if (currentProduto && currentProduto.nome) {
-          parsed.produtos.push(currentProduto);
-        }
-        currentProduto = {
-          nome: line.replace('[Produto]', '').trim(),
-          preco: 0
-        };
-      } else if (line.startsWith('[Preço]') && currentProduto) {
-        const preco = parseFloat(line.replace('[Preço]', '').trim().replace(',', '.'));
-        currentProduto.preco = isNaN(preco) ? 0 : preco;
+    if (isCSV) {
+      parseCSV(text, categoriaMap);
+    } else {
+      parseTXT(text, categoriaMap);
+    }
+  };
+
+  const parseCSV = (text: string, categoriaMap: Record<string, string>) => {
+    const lines = text.split("\n").filter(line => line.trim());
+    const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+    const lojas: LojaPreview[] = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(",").map(v => v.trim());
+      const loja: any = {};
+      headers.forEach((header, index) => {
+        loja[header] = values[index];
+      });
+
+      const preview: LojaPreview = {
+        serial: loja.serial,
+        nome: loja.name || loja.nome,
+        categoria: loja.category || loja.categoria,
+        endereco: loja.address || loja.endereco,
+        latitude: parseFloat(loja.lat || loja.latitude),
+        longitude: parseFloat(loja.lng || loja.longitude),
+        telefone: loja.phone || loja.telefone,
+        horario: loja.hours || loja.horario,
+        foto_url: loja.cover_url || loja.foto_url,
+        status: loja.status || "draft",
+        valid: true,
+      };
+
+      if (!preview.nome) {
+        preview.valid = false;
+        preview.error = "Nome é obrigatório";
+      } else if (!preview.endereco) {
+        preview.valid = false;
+        preview.error = "Endereço é obrigatório";
+      } else if (!categoriaMap[preview.categoria?.toLowerCase()]) {
+        preview.valid = false;
+        preview.error = "Categoria inválida";
       }
+
+      lojas.push(preview);
     }
 
-    if (currentProduto && currentProduto.nome) {
-      parsed.produtos.push(currentProduto);
-    }
+    setPreview(lojas);
+  };
 
-    // Validations
-    if (!parsed.nome) validationErrors.push("Nome da loja é obrigatório");
-    if (!parsed.endereco) validationErrors.push("Endereço é obrigatório");
-    if (!parsed.categoria) validationErrors.push("Categoria é obrigatória");
-    if (parsed.latitude === null) validationErrors.push("Latitude é obrigatória");
-    if (parsed.longitude === null) validationErrors.push("Longitude é obrigatória");
-    if (parsed.produtos.length === 0) validationErrors.push("Pelo menos um produto é obrigatório");
+  const parseTXT = (text: string, categoriaMap: Record<string, string>) => {
+    const blocks = text.split("[Loja]").filter(b => b.trim());
+    const lojas: LojaPreview[] = [];
 
-    setErrors(validationErrors);
-    setParsedData(parsed);
+    blocks.forEach(block => {
+      const lines = block.split("\n").filter(l => l.trim());
+      const loja: any = {};
+
+      lines.forEach(line => {
+        const [key, ...valueParts] = line.split(":");
+        if (key && valueParts.length > 0) {
+          const value = valueParts.join(":").trim();
+          loja[key.trim().toLowerCase()] = value;
+        }
+      });
+
+      const preview: LojaPreview = {
+        serial: loja.serial,
+        nome: loja.nome || loja.name,
+        categoria: loja.categoria || loja.category,
+        endereco: loja.endereco || loja.address,
+        latitude: parseFloat(loja.lat || loja.latitude),
+        longitude: parseFloat(loja.lng || loja.longitude),
+        telefone: loja.telefone || loja.phone,
+        horario: loja.horario || loja.hours,
+        foto_url: loja.cover || loja.foto_url,
+        status: loja.status || "draft",
+        valid: true,
+      };
+
+      if (!preview.nome) {
+        preview.valid = false;
+        preview.error = "Nome é obrigatório";
+      } else if (!preview.endereco) {
+        preview.valid = false;
+        preview.error = "Endereço é obrigatório";
+      } else if (!categoriaMap[preview.categoria?.toLowerCase()]) {
+        preview.valid = false;
+        preview.error = "Categoria inválida";
+      }
+
+      lojas.push(preview);
+    });
+
+    setPreview(lojas);
   };
 
   const handleImport = async () => {
-    if (!parsedData || errors.length > 0) {
-      toast.error("Corrija os erros antes de importar");
+    if (!preview.length) return;
+
+    const validLojas = preview.filter(l => l.valid);
+    if (validLojas.length === 0) {
+      toast.error("Nenhuma loja válida para importar");
       return;
     }
 
-    setIsImporting(true);
+    if (dryRun) {
+      toast.info(`Modo simulação: ${validLojas.length} lojas seriam importadas`);
+      return;
+    }
+
+    setImporting(true);
 
     try {
-      // 1. Verificar/Criar Categoria
-      let categoriaId: string;
-      const { data: existingCategoria } = await supabase
-        .from("categorias_lojas")
-        .select("id")
-        .eq("nome", parsedData.categoria)
-        .single();
+      const insertData = validLojas.map(loja => ({
+        serial: loja.serial || undefined,
+        nome: loja.nome,
+        endereco: loja.endereco,
+        categoria_id: categorias[loja.categoria.toLowerCase()],
+        latitude: loja.latitude,
+        longitude: loja.longitude,
+        telefone: loja.telefone,
+        horario: loja.horario,
+        foto_url: loja.foto_url,
+        status: loja.status,
+        is_active: loja.status === "published",
+      }));
 
-      if (existingCategoria) {
-        categoriaId = existingCategoria.id;
-      } else {
-        const { data: newCategoria, error: categoriaError } = await supabase
-          .from("categorias_lojas")
-          .insert({ nome: parsedData.categoria })
-          .select("id")
-          .single();
-
-        if (categoriaError) throw categoriaError;
-        categoriaId = newCategoria.id;
-      }
-
-      // 2. Criar Loja
-      const { data: newLoja, error: lojaError } = await supabase
+      const { data, error } = await supabase
         .from("lojas")
-        .insert({
-          nome: parsedData.nome,
-          endereco: parsedData.endereco,
-          categoria_id: categoriaId,
-          latitude: parsedData.latitude,
-          longitude: parsedData.longitude,
-          is_active: true
-        })
-        .select("id")
-        .single();
+        .insert(insertData)
+        .select();
 
-      if (lojaError) throw lojaError;
+      if (error) throw error;
 
-      // 3. Criar Produtos e Preços
-      for (const produto of parsedData.produtos) {
-        // Verificar se produto existe
-        let produtoId: string;
-        const { data: existingProduto } = await supabase
-          .from("produtos")
-          .select("id")
-          .eq("nome", produto.nome)
-          .single();
+      await createAuditLog({
+        action: "IMPORT_STORES",
+        target_type: "lojas",
+        data_diff: { count: data.length, file: file?.name },
+      });
 
-        if (existingProduto) {
-          produtoId = existingProduto.id;
-        } else {
-          const { data: newProduto, error: produtoError } = await supabase
-            .from("produtos")
-            .insert({ nome: produto.nome })
-            .select("id")
-            .single();
-
-          if (produtoError) throw produtoError;
-          produtoId = newProduto.id;
-        }
-
-        // Criar relação produto-loja
-        const { data: produtoLoja, error: produtoLojaError } = await supabase
-          .from("produtos_lojas")
-          .insert({
-            loja_id: newLoja.id,
-            produto_id: produtoId,
-            preco_atual: produto.preco,
-            promocao_percentual: 0,
-            economia_valor: 0
-          })
-          .select("id")
-          .single();
-
-        if (produtoLojaError) throw produtoLojaError;
-
-        // Criar histórico de preço
-        await supabase
-          .from("historico_precos")
-          .insert({
-            produto_loja_id: produtoLoja.id,
-            preco: produto.preco
-          });
-      }
-
-      toast.success(`✅ Loja importada com sucesso! ${parsedData.produtos.length} produtos cadastrados.`);
-      
-      // Limpar formulário
-      setSelectedFile(null);
-      setParsedData(null);
-      setErrors([]);
-      
-      // Reset file input
-      const fileInput = document.getElementById('file-input') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-
+      toast.success(`${data.length} lojas importadas com sucesso`);
+      setPreview([]);
+      setFile(null);
     } catch (error) {
-      console.error("Error importing loja:", error);
-      toast.error("Erro ao importar loja");
+      console.error("Error importing stores:", error);
+      toast.error("Erro ao importar lojas");
     } finally {
-      setIsImporting(false);
+      setImporting(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
-  }
+  if (!isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6">
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/admin/dashboard")}
-            className="hover:bg-muted"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Markets Importer</h1>
-            <p className="text-muted-foreground">Importar lojas via arquivo .txt</p>
-          </div>
+    <AdminLayout>
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold text-foreground">Importar Lojas</h2>
+          <p className="text-muted-foreground">Importar lojas em lote via CSV ou TXT</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Área de Upload */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Upload de Arquivo</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="file">Arquivo CSV ou TXT</Label>
+              <Input
+                id="file"
+                type="file"
+                accept=".csv,.txt"
+                onChange={handleFileChange}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                CSV: serial,name,category,address,lat,lng,phone,hours,cover_url,status
+              </p>
+              <p className="text-xs text-muted-foreground">
+                TXT: formato [Loja] com campos Nome:, Categoria:, etc.
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="dryRun"
+                checked={dryRun}
+                onCheckedChange={setDryRun}
+              />
+              <Label htmlFor="dryRun">Modo simulação (dry-run)</Label>
+            </div>
+          </CardContent>
+        </Card>
+
+        {preview.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Selecionar Arquivo</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                <span>Preview da Importação ({preview.length} lojas)</span>
+                <Button
+                  onClick={handleImport}
+                  disabled={importing || preview.filter(l => l.valid).length === 0}
+                >
+                  {dryRun ? "Simular" : "Confirmar"} Importação
+                </Button>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                  <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <Input
-                    id="file-input"
-                    type="file"
-                    accept=".txt"
-                    onChange={handleFileSelect}
-                    className="cursor-pointer"
-                  />
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Selecione um arquivo .txt com os dados da loja
-                  </p>
-                </div>
-
-                <div className="bg-muted p-4 rounded-lg">
-                  <p className="font-semibold mb-2">Formato do arquivo:</p>
-                  <pre className="text-xs overflow-x-auto">
-{`[Categoria] NomeDaCategoria
-[Nome] NomeDoComercio
-[Endereço] EnderecoCompleto
-[Lat] -00.000000
-[Lng] -00.000000
-
-[Produto] Produto 1
-[Preço] 0.00
-
-[Produto] Produto 2
-[Preço] 0.00`}
-                  </pre>
-                </div>
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Serial</TableHead>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead>Endereço</TableHead>
+                    <TableHead>Erro</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {preview.map((loja, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        {loja.valid ? (
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-500" />
+                        )}
+                      </TableCell>
+                      <TableCell>{loja.serial || "Auto"}</TableCell>
+                      <TableCell>{loja.nome}</TableCell>
+                      <TableCell>{loja.categoria}</TableCell>
+                      <TableCell className="max-w-xs truncate">{loja.endereco}</TableCell>
+                      <TableCell className="text-red-500">{loja.error}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
-
-          {/* Área de Preview */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Preview dos Dados</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!parsedData ? (
-                <div className="text-center text-muted-foreground py-12">
-                  <p>Selecione um arquivo para visualizar os dados</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {errors.length > 0 && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        <strong>⚠️ Existem campos obrigatórios vazios:</strong>
-                        <ul className="list-disc list-inside mt-2">
-                          {errors.map((error, i) => (
-                            <li key={i}>{error}</li>
-                          ))}
-                        </ul>
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  <div className="space-y-2">
-                    <div>
-                      <strong>Categoria:</strong>{" "}
-                      {parsedData.categoria || <Badge variant="destructive">Vazio</Badge>}
-                    </div>
-                    <div>
-                      <strong>Nome:</strong>{" "}
-                      {parsedData.nome || <Badge variant="destructive">Vazio</Badge>}
-                    </div>
-                    <div>
-                      <strong>Endereço:</strong>{" "}
-                      {parsedData.endereco || <Badge variant="destructive">Vazio</Badge>}
-                    </div>
-                    <div>
-                      <strong>Coordenadas:</strong>{" "}
-                      {parsedData.latitude !== null && parsedData.longitude !== null
-                        ? `${parsedData.latitude}, ${parsedData.longitude}`
-                        : <Badge variant="destructive">Inválidas</Badge>}
-                    </div>
-                  </div>
-
-                  <div>
-                    <strong className="block mb-2">Produtos ({parsedData.produtos.length}):</strong>
-                    <div className="space-y-2">
-                      {parsedData.produtos.map((produto, i) => (
-                        <div key={i} className="flex justify-between items-center bg-muted p-2 rounded">
-                          <span>{produto.nome}</span>
-                          <Badge>R$ {produto.preco.toFixed(2)}</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={handleImport}
-                    disabled={errors.length > 0 || isImporting}
-                    className="w-full"
-                  >
-                    {isImporting ? "Importando..." : "Importar Loja"}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        )}
       </div>
-    </div>
+    </AdminLayout>
   );
 }

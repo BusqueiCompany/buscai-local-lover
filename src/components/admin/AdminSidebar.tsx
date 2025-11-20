@@ -12,6 +12,7 @@ import {
   Code,
   ShoppingCart,
   DollarSign,
+  FileText,
 } from "lucide-react";
 
 interface MenuItem {
@@ -44,7 +45,8 @@ const menuSections: MenuSection[] = [
       { title: "Lojas", href: "/admin/lojas", icon: Store },
       { title: "Lojas Code", href: "/admin/lojas-code", icon: Code },
       { title: "Produtos", href: "/admin/produtos", icon: Package },
-      { title: "Importações", href: "/admin/importacoes", icon: Upload },
+      { title: "Importar Lojas", href: "/admin/importar-lojas", icon: Upload },
+      { title: "Importar Produtos", href: "/admin/importar-produtos", icon: Upload },
       { title: "Atualizar Preços", href: "/admin/precos", icon: DollarSign },
     ],
   },
@@ -65,6 +67,7 @@ const menuSections: MenuSection[] = [
     title: "Sistema",
     items: [
       { title: "Configurações", href: "/admin/configuracoes", icon: Settings },
+      { title: "Logs & Auditoria", href: "/admin/logs", icon: FileText },
     ],
   },
 ];
