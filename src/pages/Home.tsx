@@ -159,14 +159,14 @@ export default function Home() {
                 ? `${activeAddress.endereco}, ${activeAddress.numero} - ${activeAddress.bairro}`
                 : 'Endereço não cadastrado'}
             </span>
-            <Button 
-              variant="link" 
-              size="sm" 
-              className="text-xs text-primary p-0 h-auto"
-              onClick={() => setIsAddressSelectorOpen(true)}
-            >
-              Trocar
-            </Button>
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="text-xs text-primary p-0 h-auto"
+                onClick={() => setIsAddressSelectorOpen(true)}
+              >
+                Trocar
+              </Button>
           </div>
 
           {/* Perfil e Notificações */}
@@ -188,6 +188,11 @@ export default function Home() {
                       {vipLevel.toUpperCase()}
                     </Badge>
                   )}
+                  {userRole === "SUPORTE" && (
+                    <Badge className="bg-blue-600 text-white text-xs px-2 py-0">
+                      SUPORTE
+                    </Badge>
+                  )}
                 </div>
                 {userRole === "VIP" && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -195,9 +200,6 @@ export default function Home() {
                     <span>{points} pontos</span>
                   </div>
                 )}
-                <div className={`text-xs font-medium ${getUserLevelColor()}`}>
-                  LVL {getUserLevelNumber()} - {userRole}
-                </div>
               </div>
             </div>
 
@@ -215,10 +217,10 @@ export default function Home() {
               <NotificationBell />
               <Button
                 size="sm"
-                className="gradient-vip-gold text-white font-semibold"
+                className="gradient-vip-gold text-white font-semibold flex items-center gap-1"
                 onClick={() => navigate("/vip")}
               >
-                Seja Premium
+                VIP 💎
               </Button>
             </div>
           </div>
