@@ -43,23 +43,23 @@ import suporteIcon from "@/assets/suporte.png";
 import bazarIcon from "@/assets/bazar.png";
 
 const menuItems = [
-  // Linha 1: Necessidades Básicas
-  { icon: Wine, label: "Bebidas", route: "/bebidas", locked: false, color: "text-blue-500" },
-  { icon: Store, label: "Conveniência", route: "/conveniencia", locked: false, color: "text-orange-500" },
-  { icon: Pill, label: "Farmácia", route: "/farmacia", locked: false, color: "text-emerald-500" },
-  { icon: Droplet, label: "Gás e Água", route: "/gas-agua", locked: false, color: "text-cyan-500" },
-  
-  // Linha 2: Comida
-  { icon: Utensils, label: "Lanches", route: "/lanches", locked: false, color: "text-orange-500" },
-  { icon: Croissant, label: "Padaria", route: "/padaria", locked: false, color: "text-amber-500" },
+  // Linha 1: Alimentação
   { icon: ChefHat, label: "Restaurante", route: "/restaurante", locked: false, color: "text-red-500" },
-  { icon: PawPrint, label: "PetShop", route: "/petshop", locked: false, color: "text-purple-500" },
+  { icon: Utensils, label: "Lanches", route: "/lanches", locked: false, color: "text-orange-500" },
+  { icon: Wine, label: "Bebidas", route: "/bebidas", locked: false, color: "text-blue-500" },
+  { icon: Croissant, label: "Padaria", route: "/padaria", locked: false, color: "text-amber-500" },
   
-  // Linha 3: Serviços
+  // Linha 2: Serviços Essenciais
+  { icon: Pill, label: "Farmácia", route: "/farmacia", locked: false, color: "text-emerald-500" },
+  { icon: Store, label: "Conveniência", route: "/conveniencia", locked: false, color: "text-orange-500" },
+  { icon: PawPrint, label: "Petshop", route: "/petshop", locked: false, color: "text-purple-500" },
+  { icon: ShoppingBag, label: "Bazar", route: "/bazar", locked: false, color: "text-purple-500" },
+  
+  // Linha 3: Outros Serviços
+  { icon: Droplet, label: "Gás e Água", route: "/gas-agua", locked: false, color: "text-cyan-500" },
   { icon: Handshake, label: "Parceiro", route: "/parceiro", locked: false, color: "text-blue-600" },
   { icon: Truck, label: "Entregador", route: "/entregador", locked: false, color: "text-blue-500", special: true },
   { icon: MessageCircle, label: "Suporte", route: "/suporte", locked: false, color: "text-sky-500" },
-  { icon: ShoppingBag, label: "Bazar", route: "/bazar", locked: false, color: "text-purple-500" },
 ];
 
 export default function Home() {
@@ -286,7 +286,7 @@ export default function Home() {
                     "Lanches": lanchesIcon,
                     "Padaria": padariaIcon,
                     "Restaurante": restauranteIcon,
-                    "PetShop": petshopIcon,
+                    "Petshop": petshopIcon,
                     "Parceiro": parceiroIcon,
                     "Entregador": entregadorIcon,
                     "Suporte": suporteIcon,
