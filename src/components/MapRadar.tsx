@@ -155,12 +155,12 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
     selectedStoreRef.current = store;
     setIsTracking(true);
 
-    // Rastrear posição em tempo real (atualiza a cada movimento)
-    watchIdRef.current = navigator.geolocation.watchPosition(
+    // Primeiro, obter posição atual e desenhar rota imediatamente
+    navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
 
-        // Atualizar marcador do usuário
+        // Criar/atualizar marcador do usuário
         if (userMarkerRef.current) {
           userMarkerRef.current.setLatLng([latitude, longitude]);
         } else {
@@ -171,13 +171,42 @@ export default function MapRadar({ stores, onStoreClick, onLocationChange }: Map
 
         userMarkerRef.current.bindPopup("Você está aqui").openPopup();
 
+        // Desenhar rota inicial
+        if (selectedStoreRef.current) {
+          await drawRoute(latitude, longitude, selectedStoreRef.current.latitude, selectedStoreRef.current.longitude);
+        }
+
         // Notificar mudança de localização
         onLocationChange?.({ lat: latitude, lng: longitude });
+      },
+      (error) => {
+        console.error("Erro ao obter localização inicial:", error);
+        alert("Não foi possível obter sua localização. Verifique as permissões.");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+
+    // Depois, iniciar rastreamento em tempo real
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // Atualizar marcador do usuário
+        if (userMarkerRef.current) {
+          userMarkerRef.current.setLatLng([latitude, longitude]);
+        }
 
         // Desenhar/atualizar rota seguindo as ruas
         if (selectedStoreRef.current) {
           await drawRoute(latitude, longitude, selectedStoreRef.current.latitude, selectedStoreRef.current.longitude);
         }
+
+        // Notificar mudança de localização
+        onLocationChange?.({ lat: latitude, lng: longitude });
       },
       (error) => {
         console.error("Erro ao rastrear localização:", error);
