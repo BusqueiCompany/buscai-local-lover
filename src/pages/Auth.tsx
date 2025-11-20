@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import logo from "@/assets/busquei-logo.png";
+import logo from "@/assets/busquei-logo-main.png";
 
 const bairros = [
   "1º Abril", "3 Pontes", "7 de Abril", "Amendoeiras", "Amoreiras", "Baixada",
@@ -214,7 +214,7 @@ export default function Auth() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
-            <img src={logo} alt="BUSQUEI" className="h-20 w-20" />
+            <img src={logo} alt="BUSQUEI" className="h-32 w-32 object-contain" />
           </div>
           <div>
             <CardTitle className="text-3xl font-bold text-primary">BUSQUEI</CardTitle>
