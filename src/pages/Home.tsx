@@ -74,15 +74,46 @@ export default function Home() {
 
   const fetchActiveAddress = async () => {
     if (!user) return;
+    
+    try {
+      // Tentar buscar de user_addresses primeiro
+      const { data: addressData } = await supabase
+        .from("user_addresses")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
 
-    const { data } = await supabase
-      .from("user_addresses")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("is_active", true)
-      .maybeSingle();
+      if (addressData) {
+        setActiveAddress(addressData);
+        return;
+      }
 
-    setActiveAddress(data);
+      // Fallback: buscar de profiles caso não exista em user_addresses
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("endereco, numero, bairro, referencia")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileData && profileData.endereco) {
+        setActiveAddress({
+          id: "",
+          user_id: user.id,
+          nome: "Casa",
+          endereco: profileData.endereco,
+          numero: profileData.numero || "",
+          bairro: profileData.bairro || "",
+          complemento: "",
+          referencia: profileData.referencia || "",
+          is_active: true,
+          created_at: "",
+          updated_at: "",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao buscar endereço:", error);
+    }
   };
 
   const getUserLevelNumber = () => {
