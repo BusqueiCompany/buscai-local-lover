@@ -375,12 +375,12 @@ export default function Economizar() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-primary-foreground flex items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                 <ShoppingCart className="h-6 w-6" />
                 Lista de Compras VIP
               </h1>
             </div>
-            <Badge className="bg-accent text-white flex items-center gap-1">
+            <Badge className="bg-accent text-foreground flex items-center gap-1">
               <Crown className="h-3 w-3" />
               {planName}
             </Badge>
