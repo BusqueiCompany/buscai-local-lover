@@ -33,6 +33,8 @@ function SetViewOnMount({ coords }: { coords: [number, number] }) {
   const map = useMap();
   useEffect(() => {
     map.setView(coords, 12);
+    // Store map instance globally for location button
+    (window as any)._leaflet_map = map;
   }, [coords, map]);
   return null;
 }
@@ -125,11 +127,6 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false, onV
         zoom={10}
         scrollWheelZoom
         style={{ width: "100%", height: "100%" }}
-        ref={(map: any) => {
-          if (map) {
-            (window as any)._leaflet_map = map;
-          }
-        }}
       >
         <TileLayer
           attribution="&copy; OpenStreetMap"
