@@ -289,7 +289,7 @@ export default function Mercado() {
             </div>
           ) : storeProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8">
-              <Package className="h-12 w-12 text-muted-foreground mb-2" />
+              <Package className="w-[50px] h-[50px] text-muted-foreground mb-2" />
               <p className="text-muted-foreground">Nenhum produto cadastrado neste mercado</p>
             </div>
           ) : (
@@ -311,7 +311,7 @@ export default function Mercado() {
                         </div>
                       ) : (
                         <div className="h-40 w-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                          <Package className="h-16 w-16 text-primary/30" />
+                          <Package className="w-[50px] h-[50px] text-primary/30" />
                         </div>
                       )}
                       
