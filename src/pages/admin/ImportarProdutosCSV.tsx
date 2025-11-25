@@ -25,7 +25,7 @@ interface ParsedProduct {
 
 export default function ImportarProdutosCSV() {
   const navigate = useNavigate();
-  const { isAdmin } = useRole();
+  const { isAdmin, loading } = useRole();
   const [lojas, setLojas] = useState<Loja[]>([]);
   const [selectedLojaId, setSelectedLojaId] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
@@ -34,12 +34,14 @@ export default function ImportarProdutosCSV() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    if (loading) return;
+    
     if (!isAdmin) {
       navigate("/");
       return;
     }
     fetchLojas();
-  }, [isAdmin, navigate]);
+  }, [isAdmin, loading, navigate]);
 
   const fetchLojas = async () => {
     const { data, error } = await supabase
@@ -180,6 +182,16 @@ export default function ImportarProdutosCSV() {
       setProgress(0);
     }
   };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   if (!isAdmin) {
     return null;
