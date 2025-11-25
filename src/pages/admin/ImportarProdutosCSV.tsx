@@ -146,12 +146,21 @@ export default function ImportarProdutosCSV() {
 
       const results = data as { created: number; updated: number; errors: string[] };
 
+      console.log('Import results:', results);
+
       if (results.errors.length > 0) {
         console.error('Import errors:', results.errors);
-        toast.error(`Importação concluída com ${results.errors.length} erros. Verifique o console.`);
+        toast.error(
+          `Importação concluída com ${results.errors.length} erros. ${results.created} criados, ${results.updated} atualizados.`,
+          { duration: 5000 }
+        );
+        // Show first 3 errors
+        results.errors.slice(0, 3).forEach(err => {
+          toast.error(err, { duration: 8000 });
+        });
       } else {
         toast.success(
-          `Importação concluída! ${results.created} produtos criados, ${results.updated} produtos atualizados.`
+          `Importação concluída com sucesso! ${results.created} produtos criados, ${results.updated} produtos atualizados.`
         );
       }
 
@@ -281,17 +290,34 @@ export default function ImportarProdutosCSV() {
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Exemplo de CSV para Teste</CardTitle>
+            <CardDescription>
+              Use códigos de barras reais (EAN/GTIN com 13 dígitos) para que o sistema busque automaticamente 
+              os nomes e imagens dos produtos da Open Food Facts.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <pre className="bg-muted p-4 rounded text-sm overflow-x-auto">
 {`sku,price,unit,quantity
 7894900011517,5.99,un,100
-7891991000833,8.50,un,50`}
+7891991000833,8.50,un,50
+7896005800026,12.90,kg,30
+7891000100103,3.49,un,200`}
             </pre>
-            <p className="text-sm text-muted-foreground mt-2">
-              O primeiro é uma Coca-Cola e o segundo uma Budweiser. 
-              Os nomes e imagens serão preenchidos automaticamente!
-            </p>
+            <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+              <p>
+                <strong>Exemplos de códigos testados:</strong>
+              </p>
+              <ul className="list-disc list-inside space-y-1 ml-2">
+                <li>7894900011517 - Coca-Cola 2L</li>
+                <li>7891991000833 - Budweiser Lata</li>
+                <li>7896005800026 - Arroz Tio João</li>
+                <li>7891000100103 - Nescau Achocolatado</li>
+              </ul>
+              <p className="mt-3">
+                <strong>Importante:</strong> Os produtos serão enriquecidos automaticamente com nome e imagem 
+                da base mundial de alimentos. Se um produto não for encontrado, será cadastrado como "Produto Desconhecido".
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
