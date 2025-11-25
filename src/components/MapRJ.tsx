@@ -25,6 +25,7 @@ interface MapRJProps {
   stores?: Store[];
   onAdminSelect?: (coords: { lat: number; lng: number }) => void;
   isAdmin?: boolean;
+  onViewProducts?: (storeId: string, storeName: string) => void;
 }
 
 // Foco inicial na Zona Oeste
@@ -51,7 +52,7 @@ function AdminAddStoreEvent({ onSelect }: { onSelect?: (coords: { lat: number; l
   return null;
 }
 
-export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: MapRJProps) {
+export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false, onViewProducts }: MapRJProps) {
   const zonaOesteCenter: [number, number] = [-22.9064, -43.5607];
 
   const handleLocateUser = () => {
@@ -143,7 +144,28 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false }: M
         {/* Renderiza lojas cadastradas */}
         {stores.map((store) => (
           <Marker key={store.id} position={[store.latitude, store.longitude]}>
-            <Popup>{store.nome}</Popup>
+            <Popup>
+              <div style={{ minWidth: '200px' }}>
+                <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>{store.nome}</h3>
+                {onViewProducts && (
+                  <button
+                    onClick={() => onViewProducts(store.id, store.nome)}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      backgroundColor: '#3b82f6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                    }}
+                  >
+                    Ver Itens
+                  </button>
+                )}
+              </div>
+            </Popup>
           </Marker>
         ))}
       </MapContainer>

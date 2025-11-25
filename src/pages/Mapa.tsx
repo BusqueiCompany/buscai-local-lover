@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import MapRJ from "@/components/MapRJ";
 import { logAdminAction } from "@/utils/auditLog";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Store {
   id: string;
@@ -25,7 +27,11 @@ export default function Mapa() {
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isProductsDialogOpen, setIsProductsDialogOpen] = useState(false);
   const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedStore, setSelectedStore] = useState<{ id: string; nome: string } | null>(null);
+  const [storeProducts, setStoreProducts] = useState<any[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
   const [formData, setFormData] = useState({
     nome: "",
     endereco: "",
@@ -85,6 +91,37 @@ export default function Mapa() {
     
     setSelectedCoords(coords);
     setIsDialogOpen(true);
+  };
+
+  const handleViewProducts = async (storeId: string, storeName: string) => {
+    setSelectedStore({ id: storeId, nome: storeName });
+    setIsProductsDialogOpen(true);
+    setLoadingProducts(true);
+
+    try {
+      const { data, error } = await supabase
+        .from("produtos_lojas")
+        .select(`
+          *,
+          produtos (
+            id,
+            nome,
+            imagem_url,
+            unit
+          )
+        `)
+        .eq("loja_id", storeId)
+        .order("produtos(nome)");
+
+      if (error) throw error;
+
+      setStoreProducts(data || []);
+    } catch (error) {
+      console.error("Erro ao carregar produtos:", error);
+      toast.error("Erro ao carregar produtos da loja");
+    } finally {
+      setLoadingProducts(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -170,6 +207,7 @@ export default function Mapa() {
           stores={stores} 
           onAdminSelect={isAdmin ? handleAdminSelect : undefined}
           isAdmin={isAdmin}
+          onViewProducts={handleViewProducts}
         />
       )}
 
@@ -253,6 +291,70 @@ export default function Mapa() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para ver produtos da loja */}
+      <Dialog open={isProductsDialogOpen} onOpenChange={setIsProductsDialogOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Produtos - {selectedStore?.nome}
+            </DialogTitle>
+            <DialogDescription>
+              Produtos disponíveis nesta loja
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingProducts ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-muted-foreground">Carregando produtos...</p>
+            </div>
+          ) : storeProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <Package className="h-12 w-12 text-muted-foreground mb-2" />
+              <p className="text-muted-foreground">Nenhum produto cadastrado nesta loja</p>
+            </div>
+          ) : (
+            <ScrollArea className="h-[400px] pr-4">
+              <div className="grid gap-3">
+                {storeProducts.map((item) => (
+                  <Card key={item.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        {item.produtos?.imagem_url && (
+                          <img
+                            src={item.produtos.imagem_url}
+                            alt={item.produtos?.nome}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{item.produtos?.nome}</h4>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className="text-lg font-bold text-primary">
+                              R$ {Number(item.preco_atual).toFixed(2)}
+                            </span>
+                            {item.produtos?.unit && (
+                              <span className="text-sm text-muted-foreground">
+                                por {item.produtos.unit}
+                              </span>
+                            )}
+                          </div>
+                          {item.quantity > 0 && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Estoque: {item.quantity}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
         </DialogContent>
       </Dialog>
     </div>
