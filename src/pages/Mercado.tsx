@@ -272,14 +272,14 @@ export default function Mercado() {
 
       {/* Products Dialog */}
       <Dialog open={productsOpen} onOpenChange={setProductsOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[80vh] z-[9999]">
+        <DialogContent className="sm:max-w-[900px] max-h-[85vh] z-[9999]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Package className="h-6 w-6 text-primary" />
               Produtos - {selectedStore?.nome}
             </DialogTitle>
-            <DialogDescription>
-              Produtos disponíveis neste mercado
+            <DialogDescription className="text-base">
+              {storeProducts.length} {storeProducts.length === 1 ? 'produto disponível' : 'produtos disponíveis'}
             </DialogDescription>
           </DialogHeader>
 
@@ -293,36 +293,57 @@ export default function Mercado() {
               <p className="text-muted-foreground">Nenhum produto cadastrado neste mercado</p>
             </div>
           ) : (
-            <ScrollArea className="h-[400px] pr-4">
-              <div className="grid gap-3">
+            <ScrollArea className="h-[500px] pr-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {storeProducts.map((item) => (
-                  <Card key={item.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        {item.produtos?.imagem_url && (
+                  <Card 
+                    key={item.id}
+                    className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <CardContent className="p-0">
+                      {item.produtos?.imagem_url ? (
+                        <div className="relative h-40 w-full bg-muted">
                           <img
                             src={item.produtos.imagem_url}
                             alt={item.produtos?.nome}
-                            className="w-16 h-16 object-cover rounded"
+                            className="w-full h-full object-cover"
                           />
-                        )}
-                        <div className="flex-1">
-                          <h4 className="font-semibold">{item.produtos?.nome}</h4>
-                          <div className="flex items-center gap-4 mt-2">
-                            <span className="text-lg font-bold text-primary">
-                              R$ {Number(item.preco_atual).toFixed(2)}
-                            </span>
-                            {item.produtos?.unit && (
-                              <span className="text-sm text-muted-foreground">
-                                por {item.produtos.unit}
+                        </div>
+                      ) : (
+                        <div className="h-40 w-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                          <Package className="h-16 w-16 text-primary/30" />
+                        </div>
+                      )}
+                      
+                      <div className="p-4 space-y-3">
+                        <h4 className="font-semibold text-base leading-tight line-clamp-2 min-h-[2.5rem]">
+                          {item.produtos?.nome}
+                        </h4>
+                        
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-2xl font-bold text-primary">
+                                R$ {Number(item.preco_atual).toFixed(2)}
                               </span>
+                              {item.produtos?.unit && (
+                                <span className="text-sm text-muted-foreground">
+                                  /{item.produtos.unit}
+                                </span>
+                              )}
+                            </div>
+                            {item.quantity > 0 ? (
+                              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                <Badge variant="secondary" className="text-xs">
+                                  Estoque: {item.quantity}
+                                </Badge>
+                              </p>
+                            ) : (
+                              <p className="text-xs text-destructive mt-1">
+                                Sem estoque
+                              </p>
                             )}
                           </div>
-                          {item.quantity > 0 && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Estoque: {item.quantity}
-                            </p>
-                          )}
                         </div>
                       </div>
                     </CardContent>
