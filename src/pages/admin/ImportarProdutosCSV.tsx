@@ -142,7 +142,13 @@ export default function ImportarProdutosCSV() {
 
       if (error) {
         console.error('Function error:', error);
-        toast.error("Erro ao importar produtos");
+        const errorMessage = error.message || JSON.stringify(error);
+        toast.error(`Erro ao importar produtos: ${errorMessage}`, { duration: 8000 });
+        return;
+      }
+
+      if (!data) {
+        toast.error("Nenhum dado retornado da importação");
         return;
       }
 

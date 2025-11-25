@@ -6,3 +6,4 @@ project_id = "wxylfssbweyzbxkxtfdu"
 verify_jwt = false
 
 [functions.import-products-csv]
+verify_jwt = false
