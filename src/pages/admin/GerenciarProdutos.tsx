@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Package } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Package, Upload } from "lucide-react";
 
 interface Produto {
   id: string;
@@ -146,8 +146,17 @@ export default function GerenciarProdutos() {
             </div>
           </div>
 
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/admin/importar-produtos-csv")}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Importar CSV
+            </Button>
+            
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
               <Button className="bg-[#FF7A00] hover:bg-[#E66A00]" onClick={() => setEditingProduto(null)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Produto
@@ -205,6 +214,7 @@ export default function GerenciarProdutos() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         <div className="mb-6">

@@ -18,6 +18,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import LojasCode from "./pages/admin/LojasCode";
 import Importacoes from "./pages/admin/Importacoes";
 import ImportarProdutos from "./pages/admin/ImportarProdutos";
+import ImportarProdutosCSV from "./pages/admin/ImportarProdutosCSV";
 import ConfiguracoesAdmin from "./pages/admin/ConfiguracoesAdmin";
 import Users from "./pages/admin/Users";
 import Seeds from "./pages/admin/Seeds";
@@ -57,7 +58,8 @@ const App = () => (
             <Route path="/admin/produtos" element={<GerenciarProdutos />} />
             <Route path="/admin/importacoes" element={<Importacoes />} />
             <Route path="/admin/importar-lojas" element={<ImportarLojas />} />
-            <Route path="/admin/importar-produtos" element={<ImportarProdutos />} />
+          <Route path="/admin/importar-produtos" element={<ImportarProdutos />} />
+          <Route path="/admin/importar-produtos-csv" element={<ImportarProdutosCSV />} />
             <Route path="/admin/configuracoes" element={<ConfiguracoesAdmin />} />
             <Route path="/admin/users" element={<Users />} />
             <Route path="/admin/seeds" element={<Seeds />} />
