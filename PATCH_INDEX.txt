@@ -1,0 +1,38 @@
+Patches created:
+- docs_FIRESTORE_SCHEMA.md
+- scripts_import_off.js
+- src_hooks_useEntregador.ts
+- prompts_LOVABLE.md
+- README_PATCH.md
+
+Extracted project overview (top-level):
+
+busquei_2_0_extracted/
+  buscai-local-lover-main/
+    - .env
+    - .gitignore
+    - README.md
+    - bun.lockb
+    - components.json
+    - eslint.config.js
+    - index.html
+    - package-lock.json
+    - package.json
+    - postcss.config.js
+    - tailwind.config.ts
+    - tsconfig.app.json
+    - tsconfig.json
+    - tsconfig.node.json
+    - vite.config.ts
+    public/
+      - favicon.ico
+      - placeholder.svg
+      - robots.txt
+    src/
+      - App.css
+      - App.tsx
+      - index.css
+      - main.tsx
+      - vite-env.d.ts
+    supabase/
+      - config.toml
