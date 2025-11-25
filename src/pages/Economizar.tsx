@@ -370,7 +370,7 @@ export default function Economizar() {
               variant="ghost"
               size="icon"
               onClick={() => navigate("/")}
-              className="text-primary-foreground hover:bg-primary-foreground/10"
+              className="text-foreground hover:bg-foreground/10"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
