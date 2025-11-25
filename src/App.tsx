@@ -14,15 +14,22 @@ import Placeholder from "./pages/Placeholder";
 import Vip from "./pages/Vip";
 import Suporte from "./pages/Suporte";
 import SuporteChat from "./pages/SuporteChat";
-import DashboardNew from "./pages/admin/DashboardNew";
-import ProdutosGlobais from "./pages/admin/ProdutosGlobais";
-import ImportacoesNew from "./pages/admin/ImportacoesNew";
+import AdminDashboard from "./pages/admin/Dashboard";
+import LojasCode from "./pages/admin/LojasCode";
+import Importacoes from "./pages/admin/Importacoes";
+import ImportarProdutos from "./pages/admin/ImportarProdutos";
+import ImportarProdutosCSV from "./pages/admin/ImportarProdutosCSV";
+import ConfiguracoesAdmin from "./pages/admin/ConfiguracoesAdmin";
+import Users from "./pages/admin/Users";
+import Seeds from "./pages/admin/Seeds";
+import ImportarLojas from "./pages/admin/ImportarLojas";
 import GerenciarLojas from "./pages/admin/GerenciarLojas";
+import GerenciarProdutos from "./pages/admin/GerenciarProdutos";
+import AtualizarPrecos from "./pages/admin/AtualizarPrecos";
 import GerenciarPedidos from "./pages/admin/GerenciarPedidos";
 import Entregadores from "./pages/admin/Entregadores";
 import SuporteAdmin from "./pages/admin/SuporteAdmin";
 import Logs from "./pages/admin/Logs";
-import Users from "./pages/admin/Users";
 import Mapa from "./pages/Mapa";
 import PainelEntregador from "./pages/PainelEntregador";
 import Mercado from "./pages/Mercado";
@@ -44,18 +51,23 @@ const App = () => (
             <Route path="/radar" element={<Radar />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
-            
-            {/* Admin Routes - New Structure */}
-            <Route path="/admin" element={<DashboardNew />} />
-            <Route path="/admin/users" element={<Users />} />
-            <Route path="/admin/produtos-globais" element={<ProdutosGlobais />} />
-            <Route path="/admin/importacoes" element={<ImportacoesNew />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/lojas" element={<GerenciarLojas />} />
+            <Route path="/admin/lojas-code" element={<LojasCode />} />
+            <Route path="/admin/produtos" element={<GerenciarProdutos />} />
+            <Route path="/admin/importacoes" element={<Importacoes />} />
+            <Route path="/admin/importar-lojas" element={<ImportarLojas />} />
+          <Route path="/admin/importar-produtos" element={<ImportarProdutos />} />
+          <Route path="/admin/importar-produtos-csv" element={<ImportarProdutosCSV />} />
+            <Route path="/admin/configuracoes" element={<ConfiguracoesAdmin />} />
+            <Route path="/admin/users" element={<Users />} />
+            <Route path="/admin/seeds" element={<Seeds />} />
+            <Route path="/admin/precos" element={<AtualizarPrecos />} />
             <Route path="/admin/pedidos" element={<GerenciarPedidos />} />
             <Route path="/admin/entregadores" element={<Entregadores />} />
             <Route path="/admin/suporte" element={<SuporteAdmin />} />
             <Route path="/admin/logs" element={<Logs />} />
-            
             <Route path="/entregador" element={<PainelEntregador />} />
             
             {/* Placeholder routes */}
