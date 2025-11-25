@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Plus, Search, Trash2, ShoppingCart, Crown, AlertCircle, TrendingDown, MapPin, Store, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trash2, ShoppingCart, Crown, AlertCircle, TrendingDown, MapPin, Store, Sparkles, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -287,6 +287,63 @@ export default function Economizar() {
     }).format(value);
   };
 
+  const handleMakeOrder = async () => {
+    if (!optimizationResult) return;
+
+    try {
+      // Preparar itens do pedido do Cenário B (cesta otimizada)
+      const orderItems = optimizationResult.scenarioB.stores.flatMap(store =>
+        store.items.map(item => ({
+          store_id: store.store_id,
+          store_name: store.store_name,
+          product_name: item.product_name,
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.subtotal,
+        }))
+      );
+
+      // Criar pedido na tabela pedidos
+      const { data: pedido, error: pedidoError } = await supabase
+        .from("pedidos")
+        .insert({
+          cliente_id: user?.id,
+          status: "pendente",
+          loja_nome: "Múltiplas Lojas",
+          itens: orderItems,
+          loja_lat: optimizationResult.scenarioB.stores[0]?.latitude || null,
+          loja_lng: optimizationResult.scenarioB.stores[0]?.longitude || null,
+        })
+        .select()
+        .single();
+
+      if (pedidoError) throw pedidoError;
+
+      toast.success("Pedido criado com sucesso!", {
+        description: `Total: ${formatCurrency(optimizationResult.scenarioC.total_cost)}`,
+      });
+
+      // Limpar a lista de compras após criar o pedido
+      const { error: clearError } = await supabase
+        .from("user_shopping_lists")
+        .delete()
+        .eq("user_id", user?.id)
+        .eq("is_active", true);
+
+      if (clearError) throw clearError;
+
+      setShoppingList([]);
+      setOptimizationResult(null);
+      
+      // Navegar para a página de pedidos do entregador
+      toast.info("Aguardando atribuição de entregador...");
+      
+    } catch (error) {
+      console.error("Erro ao criar pedido:", error);
+      toast.error("Erro ao criar pedido. Tente novamente.");
+    }
+  };
+
   const filteredList = shoppingList.filter((item) =>
     item.product_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -473,13 +530,22 @@ export default function Economizar() {
                 </div>
               )}
 
-              <Button
-                onClick={() => setShowDetails(true)}
-                variant="outline"
-                className="w-full"
-              >
-                Ver Opções de Rota
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setShowDetails(true)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Ver Opções de Rota
+                </Button>
+                <Button
+                  onClick={handleMakeOrder}
+                  className="flex-1 gradient-primary font-bold"
+                >
+                  <ShoppingBag className="h-4 w-4 mr-2" />
+                  Fazer Pedido
+                </Button>
+              </div>
             </div>
           </Card>
         )}
