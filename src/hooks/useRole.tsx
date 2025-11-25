@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export type UserRole = "FREE" | "VIP" | "PARCEIRO" | "ENTREGADOR" | "SUPORTE" | "ADMINISTRADOR";
 
 export const useRole = () => {
-  const { userRole, isAdmin } = useAuth();
+  const { userRole, isAdmin, loading } = useAuth();
 
   const can = (permission: string): boolean => {
     const role = userRole as UserRole;
@@ -53,6 +53,7 @@ export const useRole = () => {
   return {
     role: userRole as UserRole,
     isAdmin,
+    loading,
     can,
   };
 };
