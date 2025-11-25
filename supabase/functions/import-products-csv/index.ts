@@ -25,13 +25,17 @@ interface OpenFoodFactsResponse {
 
 async function fetchProductFromOpenFoodFacts(sku: string): Promise<{ name: string; image_url: string | null }> {
   try {
+    console.log(`Fetching product data for SKU: ${sku}`);
     const response = await fetch(`https://world.openfoodfacts.org/api/v2/product/${sku}.json`);
     const data: OpenFoodFactsResponse = await response.json();
     
     if (data.status === 1 && data.product) {
       const name = data.product.product_name || 'Produto Desconhecido';
       const image_url = data.product.image_front_small_url || data.product.image_url || null;
+      console.log(`Found product: ${name}, image: ${image_url ? 'yes' : 'no'}`);
       return { name, image_url };
+    } else {
+      console.log(`Product not found in Open Food Facts: ${sku}`);
     }
   } catch (error) {
     console.error(`Error fetching product ${sku} from Open Food Facts:`, error);
@@ -53,6 +57,7 @@ serve(async (req) => {
     const { csvData, lojaId } = await req.json();
     
     if (!csvData || !lojaId) {
+      console.error('Missing csvData or lojaId');
       return new Response(
         JSON.stringify({ error: 'CSV data and lojaId are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -72,10 +77,11 @@ serve(async (req) => {
       const row: ProductRow = csvData[i];
       
       try {
-        console.log(`Processing product ${i + 1}/${csvData.length}: SKU ${row.sku}`);
+        console.log(`\n--- Processing product ${i + 1}/${csvData.length}: SKU ${row.sku} ---`);
 
         // Fetch product data from Open Food Facts
         const { name, image_url } = await fetchProductFromOpenFoodFacts(row.sku);
+        console.log(`Enriched data - Name: ${name}, Image: ${image_url}`);
         
         // Check if product exists in produtos table
         const { data: existingProduct, error: fetchError } = await supabase
@@ -91,8 +97,10 @@ serve(async (req) => {
         }
 
         let productId: string;
+        let isNewProduct = false;
 
         if (existingProduct) {
+          console.log(`Product exists with ID: ${existingProduct.id}, updating...`);
           // Update existing product
           const { data: updatedProduct, error: updateError } = await supabase
             .from('produtos')
@@ -108,13 +116,14 @@ serve(async (req) => {
 
           if (updateError) {
             console.error(`Error updating product ${row.sku}:`, updateError);
-            results.errors.push(`SKU ${row.sku}: ${updateError.message}`);
+            results.errors.push(`SKU ${row.sku}: Erro ao atualizar - ${updateError.message}`);
             continue;
           }
 
           productId = updatedProduct.id;
-          console.log(`Updated product ${row.sku} (ID: ${productId})`);
+          console.log(`✓ Updated product ${row.sku}`);
         } else {
+          console.log(`Product does not exist, creating new...`);
           // Create new product
           const { data: newProduct, error: insertError } = await supabase
             .from('produtos')
@@ -129,16 +138,18 @@ serve(async (req) => {
 
           if (insertError) {
             console.error(`Error creating product ${row.sku}:`, insertError);
-            results.errors.push(`SKU ${row.sku}: ${insertError.message}`);
+            results.errors.push(`SKU ${row.sku}: Erro ao criar - ${insertError.message}`);
             continue;
           }
 
           productId = newProduct.id;
+          isNewProduct = true;
           results.created++;
-          console.log(`Created new product ${row.sku} (ID: ${productId})`);
+          console.log(`✓ Created new product ${row.sku} with ID: ${productId}`);
         }
 
         // Upsert produtos_lojas (product-store relationship)
+        console.log(`Upserting produtos_lojas for product ${productId} and loja ${lojaId}...`);
         const { error: upsertError } = await supabase
           .from('produtos_lojas')
           .upsert({
@@ -153,23 +164,29 @@ serve(async (req) => {
 
         if (upsertError) {
           console.error(`Error upserting produtos_lojas for ${row.sku}:`, upsertError);
-          results.errors.push(`SKU ${row.sku}: ${upsertError.message}`);
+          results.errors.push(`SKU ${row.sku}: Erro ao associar com loja - ${upsertError.message}`);
           continue;
         }
 
-        if (existingProduct) {
+        if (!isNewProduct) {
           results.updated++;
         }
 
-        console.log(`Successfully processed product ${row.sku}`);
+        console.log(`✓ Successfully processed product ${row.sku}`);
 
       } catch (error) {
         console.error(`Unexpected error processing product ${row.sku}:`, error);
-        results.errors.push(`SKU ${row.sku}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        results.errors.push(`SKU ${row.sku}: Erro inesperado - ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
 
-    console.log(`Import completed. Created: ${results.created}, Updated: ${results.updated}, Errors: ${results.errors.length}`);
+    console.log(`\n=== Import completed ===`);
+    console.log(`Created: ${results.created}`);
+    console.log(`Updated: ${results.updated}`);
+    console.log(`Errors: ${results.errors.length}`);
+    if (results.errors.length > 0) {
+      console.log('Errors:', results.errors);
+    }
 
     return new Response(
       JSON.stringify(results),
@@ -182,7 +199,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in import-products-csv function:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? error.stack : undefined
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
