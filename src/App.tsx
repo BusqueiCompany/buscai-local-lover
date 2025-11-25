@@ -31,6 +31,7 @@ import SuporteAdmin from "./pages/admin/SuporteAdmin";
 import Logs from "./pages/admin/Logs";
 import Mapa from "./pages/Mapa";
 import PainelEntregador from "./pages/PainelEntregador";
+import Mercado from "./pages/Mercado";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,6 +73,7 @@ const App = () => (
             <Route path="/pedido" element={<Placeholder />} />
             
             {/* Category routes */}
+            <Route path="/mercado" element={<Mercado />} />
             <Route path="/bebidas" element={<Placeholder />} />
             <Route path="/conveniencia" element={<Placeholder />} />
             <Route path="/farmacia" element={<Placeholder />} />

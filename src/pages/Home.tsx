@@ -41,6 +41,7 @@ import parceiroIcon from "@/assets/parceiro.png";
 import entregadorIcon from "@/assets/entregador.png";
 import suporteIcon from "@/assets/suporte.png";
 import bazarIcon from "@/assets/bazar.png";
+import mercadoIcon from "@/assets/mercado.png";
 
 const menuItems = [
   // Linha 1: Alimentação
@@ -49,13 +50,14 @@ const menuItems = [
   { icon: Wine, label: "Bebidas", route: "/bebidas", locked: false, color: "text-blue-500" },
   { icon: Croissant, label: "Padaria", route: "/padaria", locked: false, color: "text-amber-500" },
   
-  // Linha 2: Serviços Essenciais
+  // Linha 2: Compras e Serviços Essenciais
+  { icon: ShoppingBag, label: "Mercado", route: "/mercado", locked: false, color: "text-green-600" },
   { icon: Pill, label: "Farmácia", route: "/farmacia", locked: false, color: "text-emerald-500" },
   { icon: Store, label: "Conveniência", route: "/conveniencia", locked: false, color: "text-orange-500" },
   { icon: PawPrint, label: "Petshop", route: "/petshop", locked: false, color: "text-purple-500" },
-  { icon: ShoppingBag, label: "Bazar", route: "/bazar", locked: false, color: "text-purple-500" },
   
   // Linha 3: Outros Serviços
+  { icon: ShoppingBag, label: "Bazar", route: "/bazar", locked: false, color: "text-purple-500" },
   { icon: Droplet, label: "Gás e Água", route: "/gas-agua", locked: false, color: "text-cyan-500" },
   { icon: Handshake, label: "Parceiro", route: "/parceiro", locked: false, color: "text-blue-600" },
   { icon: Truck, label: "Entregador", route: "/entregador", locked: false, color: "text-blue-500", special: true },
@@ -291,6 +293,7 @@ export default function Home() {
                     "Entregador": entregadorIcon,
                     "Suporte": suporteIcon,
                     "Bazar": bazarIcon,
+                    "Mercado": mercadoIcon,
                   };
                   
                   if (iconMap[item.label]) {
