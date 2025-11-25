@@ -242,7 +242,7 @@ export default function Home() {
               <Button
                 size="sm"
                 className="gradient-vip-gold text-white font-semibold flex items-center gap-1"
-                onClick={() => navigate("/vip")}
+                onClick={() => navigate("/economizar")}
               >
                 VIP 💎
               </Button>
