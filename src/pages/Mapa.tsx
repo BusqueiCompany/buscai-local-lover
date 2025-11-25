@@ -189,7 +189,7 @@ export default function Mapa() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold">Radar de Preços</h1>
+              <h1 className="text-xl font-bold">Mapa de Lojas</h1>
               <p className="text-xs text-muted-foreground">
                 {stores.length} lojas cadastradas
               </p>
