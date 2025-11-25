@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, FileText } from "lucide-react";
+import { ArrowLeft, Upload, FileText, AlertCircle } from "lucide-react";
 
 interface ParsedProduct {
   sku: string;
@@ -34,6 +35,8 @@ export default function ImportarProdutos() {
   const [file, setFile] = useState<File | null>(null);
   const [parsedProducts, setParsedProducts] = useState<ParsedProduct[]>([]);
   const [importing, setImporting] = useState(false);
+  const [encoding, setEncoding] = useState<"UTF-8" | "ISO-8859-1">("UTF-8");
+  const [hasEncodingIssues, setHasEncodingIssues] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAdmin) {
@@ -76,12 +79,16 @@ export default function ImportarProdutos() {
     parseCSV(selectedFile);
   };
 
-  const parseCSV = (file: File) => {
+  const parseCSV = (file: File, selectedEncoding: "UTF-8" | "ISO-8859-1" = encoding) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
       const lines = text.split("\n").filter((line) => line.trim());
       const products: ParsedProduct[] = [];
+
+      // Detectar problemas de encoding
+      const hasCorruptedChars = text.includes("�") || /[â€™â€œâ€�ãƒÂ£ãƒÂ§ãƒÂ³]/i.test(text);
+      setHasEncodingIssues(hasCorruptedChars);
 
       // Skip header
       for (let i = 1; i < lines.length; i++) {
@@ -101,10 +108,22 @@ export default function ImportarProdutos() {
       }
 
       setParsedProducts(products);
-      toast.success(`${products.length} produtos encontrados no arquivo`);
+      
+      if (hasCorruptedChars && selectedEncoding === "UTF-8") {
+        toast.warning(`${products.length} produtos encontrados, mas há problemas de acentuação. Tente mudar o encoding para ISO-8859-1.`);
+      } else {
+        toast.success(`${products.length} produtos encontrados no arquivo`);
+      }
     };
 
-    reader.readAsText(file);
+    reader.readAsText(file, selectedEncoding);
+  };
+  
+  const handleEncodingChange = (newEncoding: "UTF-8" | "ISO-8859-1") => {
+    setEncoding(newEncoding);
+    if (file) {
+      parseCSV(file, newEncoding);
+    }
   };
 
   const handleImport = async () => {
@@ -270,6 +289,24 @@ export default function ImportarProdutos() {
                 />
               </div>
 
+              {file && (
+                <div>
+                  <Label htmlFor="encoding">Encoding do Arquivo</Label>
+                  <Select value={encoding} onValueChange={handleEncodingChange}>
+                    <SelectTrigger id="encoding">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="UTF-8">UTF-8 (padrão)</SelectItem>
+                      <SelectItem value="ISO-8859-1">ISO-8859-1 / Latin-1 (para arquivos com problemas de acentuação)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Se os acentos estiverem errados no preview, troque para ISO-8859-1
+                  </p>
+                </div>
+              )}
+
               <div className="bg-muted p-4 rounded-lg">
                 <p className="text-sm font-medium mb-2">Formato esperado do CSV:</p>
                 <pre className="text-xs bg-background p-3 rounded overflow-x-auto">
@@ -287,17 +324,38 @@ export default function ImportarProdutos() {
                 <CardTitle>3. Preview dos Produtos ({parsedProducts.length})</CardTitle>
               </CardHeader>
               <CardContent>
+                {hasEncodingIssues && (
+                  <Alert className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Detectamos problemas de acentuação nos nomes dos produtos. Se os acentos estiverem incorretos, 
+                      selecione <strong>ISO-8859-1</strong> no campo de encoding acima.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
                 <div className="max-h-96 overflow-y-auto space-y-2">
-                  {parsedProducts.map((product, index) => (
-                    <div key={index} className="flex items-center gap-4 p-3 bg-muted rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-medium">{product.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          SKU: {product.sku} | R$ {product.price.toFixed(2)} | {product.unit} | Estoque: {product.quantity}
-                        </p>
+                  {parsedProducts.map((product, index) => {
+                    const hasIssue = product.name.includes("�") || /[â€™â€œâ€�ãƒÂ£ãƒÂ§ãƒÂ³]/i.test(product.name);
+                    return (
+                      <div 
+                        key={index} 
+                        className={`flex items-center gap-4 p-3 rounded-lg ${
+                          hasIssue ? "bg-destructive/10 border border-destructive/20" : "bg-muted"
+                        }`}
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium">{product.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            SKU: {product.sku} | R$ {product.price.toFixed(2)} | {product.unit} | Estoque: {product.quantity}
+                          </p>
+                        </div>
+                        {hasIssue && (
+                          <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <Button
