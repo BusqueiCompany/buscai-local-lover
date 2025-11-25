@@ -3,12 +3,13 @@ import { BottomNav } from "@/components/ui/bottom-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Store, MapPin, Phone, Clock, Navigation } from "lucide-react";
+import { ArrowLeft, Store, MapPin, Phone, Clock, Navigation, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import MapRadar from "@/components/MapRadar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Store {
   id: string;
@@ -26,6 +27,9 @@ export default function Radar() {
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
+  const [storeProducts, setStoreProducts] = useState<any[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -133,6 +137,36 @@ export default function Radar() {
   const handleStoreClick = (store: Store) => {
     setSelectedStore(store);
     setDetailsOpen(true);
+  };
+
+  const handleViewProducts = async (storeId: string) => {
+    setLoadingProducts(true);
+    setProductsOpen(true);
+
+    try {
+      const { data, error } = await supabase
+        .from("produtos_lojas")
+        .select(`
+          *,
+          produtos (
+            id,
+            nome,
+            imagem_url,
+            unit
+          )
+        `)
+        .eq("loja_id", storeId)
+        .order("produtos(nome)");
+
+      if (error) throw error;
+
+      setStoreProducts(data || []);
+    } catch (error) {
+      console.error("Erro ao carregar produtos:", error);
+      toast.error("Erro ao carregar produtos da loja");
+    } finally {
+      setLoadingProducts(false);
+    }
   };
 
   return (
@@ -320,7 +354,19 @@ export default function Radar() {
 
               <div className="flex gap-2 pt-4 border-t">
                 <Button
-                  className="w-full"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    if (selectedStore) {
+                      handleViewProducts(selectedStore.id);
+                    }
+                  }}
+                >
+                  <Package className="mr-2 h-4 w-4" />
+                  Ver Itens
+                </Button>
+                <Button
+                  className="flex-1"
                   onClick={() => {
                     if (selectedStore) {
                       handleStartRoute(selectedStore);
@@ -332,6 +378,70 @@ export default function Radar() {
                 </Button>
               </div>
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Products Dialog */}
+      <Dialog open={productsOpen} onOpenChange={setProductsOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[80vh] z-[9999]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Produtos - {selectedStore?.nome}
+            </DialogTitle>
+            <DialogDescription>
+              Produtos disponíveis nesta loja
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingProducts ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-muted-foreground">Carregando produtos...</p>
+            </div>
+          ) : storeProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <Package className="h-12 w-12 text-muted-foreground mb-2" />
+              <p className="text-muted-foreground">Nenhum produto cadastrado nesta loja</p>
+            </div>
+          ) : (
+            <ScrollArea className="h-[400px] pr-4">
+              <div className="grid gap-3">
+                {storeProducts.map((item) => (
+                  <Card key={item.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        {item.produtos?.imagem_url && (
+                          <img
+                            src={item.produtos.imagem_url}
+                            alt={item.produtos?.nome}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{item.produtos?.nome}</h4>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className="text-lg font-bold text-primary">
+                              R$ {Number(item.preco_atual).toFixed(2)}
+                            </span>
+                            {item.produtos?.unit && (
+                              <span className="text-sm text-muted-foreground">
+                                por {item.produtos.unit}
+                              </span>
+                            )}
+                          </div>
+                          {item.quantity > 0 && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Estoque: {item.quantity}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </ScrollArea>
           )}
         </DialogContent>
       </Dialog>
