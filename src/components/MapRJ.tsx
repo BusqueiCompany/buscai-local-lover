@@ -135,10 +135,8 @@ export default function MapRJ({ stores = [], onAdminSelect, isAdmin = false, onV
 
         <SetViewOnMount coords={zonaOesteCenter} />
 
-        {/* Evento para ADM adicionar lojas */}
         {isAdmin && onAdminSelect && <AdminAddStoreEvent onSelect={onAdminSelect} />}
 
-        {/* Renderiza lojas cadastradas */}
         {stores.map((store) => (
           <Marker key={store.id} position={[store.latitude, store.longitude]}>
             <Popup>
