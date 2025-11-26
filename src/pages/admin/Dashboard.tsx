@@ -153,12 +153,23 @@ export default function AdminDashboard() {
 
             <div
               className="p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors"
-              onClick={() => navigate("/admin/importacoes")}
+              onClick={() => navigate("/admin/importar-lojas")}
             >
-              <TrendingUp className="h-8 w-8 mb-2 text-primary" />
-              <h3 className="font-semibold">Importar Dados</h3>
+              <Store className="h-8 w-8 mb-2 text-primary" />
+              <h3 className="font-semibold">Importar Lojas</h3>
               <p className="text-sm text-muted-foreground">
-                Importar lojas e produtos
+                Upload CSV de lojas
+              </p>
+            </div>
+
+            <div
+              className="p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors"
+              onClick={() => navigate("/admin/importar-produtos")}
+            >
+              <Package className="h-8 w-8 mb-2 text-primary" />
+              <h3 className="font-semibold">Importar Produtos</h3>
+              <p className="text-sm text-muted-foreground">
+                Upload CSV de produtos
               </p>
             </div>
           </CardContent>

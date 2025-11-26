@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminGuard } from "@/components/admin/AdminGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Package, Upload } from "lucide-react";
+import { Plus, Pencil, Package } from "lucide-react";
 
 interface Produto {
   id: string;
@@ -25,7 +26,6 @@ interface Categoria {
 }
 
 export default function GerenciarProdutos() {
-  const { isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -35,17 +35,8 @@ export default function GerenciarProdutos() {
   const [filterCategoria, setFilterCategoria] = useState<string>("all");
 
   useEffect(() => {
-    if (!authLoading && !isAdmin) {
-      navigate("/");
-      toast.error("Acesso negado");
-    }
-  }, [isAdmin, authLoading, navigate]);
-
-  useEffect(() => {
-    if (isAdmin) {
-      fetchData();
-    }
-  }, [isAdmin]);
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -120,48 +111,24 @@ export default function GerenciarProdutos() {
     ? produtos 
     : produtos.filter(p => p.categoria_id === filterCategoria);
 
-  if (loading || authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/admin/dashboard")}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+    <AdminGuard>
+      <AdminLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Gerenciar Produtos</h1>
+              <h2 className="text-3xl font-bold">Gerenciar Produtos</h2>
               <p className="text-muted-foreground">Cadastre e gerencie os produtos do sistema</p>
             </div>
-          </div>
 
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/admin/importar-produtos-csv")}
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              Importar CSV
-            </Button>
-            
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-              <Button className="bg-[#FF7A00] hover:bg-[#E66A00]" onClick={() => setEditingProduto(null)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Produto
-              </Button>
-            </DialogTrigger>
+            <div className="flex gap-2">
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => setEditingProduto(null)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo Produto
+                  </Button>
+                </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>{editingProduto ? "Editar Produto" : "Cadastrar Novo Produto"}</DialogTitle>
@@ -204,7 +171,7 @@ export default function GerenciarProdutos() {
                 </div>
 
                 <div className="flex gap-2 pt-4">
-                  <Button type="submit" className="flex-1 bg-[#FF7A00] hover:bg-[#E66A00]">
+                  <Button type="submit" className="flex-1">
                     {editingProduto ? "Atualizar" : "Cadastrar"}
                   </Button>
                   <Button type="button" variant="outline" onClick={closeDialog}>
@@ -281,7 +248,8 @@ export default function GerenciarProdutos() {
             <p className="text-sm text-muted-foreground mt-2">Clique em "Novo Produto" para começar.</p>
           </Card>
         )}
-      </div>
-    </div>
+        </div>
+      </AdminLayout>
+    </AdminGuard>
   );
 }

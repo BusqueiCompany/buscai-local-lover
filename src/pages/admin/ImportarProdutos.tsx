@@ -1,133 +1,117 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, FileText, AlertCircle } from "lucide-react";
-
-interface ParsedProduct {
-  sku: string;
-  name: string;
-  price: number;
-  unit: string;
-  quantity: number;
-  image_url: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { useRole } from "@/hooks/useRole";
 
 interface Loja {
   id: string;
-  serial: string;
   nome: string;
+  serial: string;
+}
+
+interface ParsedProduct {
+  sku: string;
+  price: number;
+  unit: string;
+  quantity: number;
 }
 
 export default function ImportarProdutos() {
-  const { isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { isAdmin, loading } = useRole();
   const [lojas, setLojas] = useState<Loja[]>([]);
-  const [selectedLojaSerial, setSelectedLojaSerial] = useState(searchParams.get("loja") || "");
+  const [selectedLojaId, setSelectedLojaId] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [parsedProducts, setParsedProducts] = useState<ParsedProduct[]>([]);
   const [importing, setImporting] = useState(false);
-  const [encoding, setEncoding] = useState<"UTF-8" | "ISO-8859-1">("UTF-8");
-  const [hasEncodingIssues, setHasEncodingIssues] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    if (!authLoading && !isAdmin) {
+    if (loading) return;
+    
+    if (!isAdmin) {
       navigate("/");
-      toast.error("Acesso negado");
+      return;
     }
-  }, [isAdmin, authLoading, navigate]);
-
-  useEffect(() => {
-    if (isAdmin) {
-      fetchLojas();
-    }
-  }, [isAdmin]);
+    fetchLojas();
+  }, [isAdmin, loading, navigate]);
 
   const fetchLojas = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("lojas")
-        .select("id, serial, nome")
-        .order("nome");
+    const { data, error } = await supabase
+      .from("lojas")
+      .select("id, nome, serial")
+      .eq("is_active", true)
+      .order("nome");
 
-      if (error) throw error;
-      setLojas(data || []);
-    } catch (error) {
-      console.error("Error fetching stores:", error);
+    if (error) {
       toast.error("Erro ao carregar lojas");
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
-
-    if (!selectedFile.name.endsWith(".csv")) {
-      toast.error("Por favor, selecione um arquivo CSV");
+      console.error(error);
       return;
     }
 
+    setLojas(data || []);
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
     setFile(selectedFile);
-    parseCSV(selectedFile);
+    await parseCSV(selectedFile);
   };
 
-  const parseCSV = (file: File, selectedEncoding: "UTF-8" | "ISO-8859-1" = encoding) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      const lines = text.split("\n").filter((line) => line.trim());
-      const products: ParsedProduct[] = [];
-
-      // Detectar problemas de encoding
-      const hasCorruptedChars = text.includes("�") || /[â€™â€œâ€�ãƒÂ£ãƒÂ§ãƒÂ³]/i.test(text);
-      setHasEncodingIssues(hasCorruptedChars);
-
-      // Skip header
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        const [sku, name, price, unit, quantity, image_url] = line.split(",").map((s) => s.trim());
-
-        products.push({
-          sku: sku || "",
-          name: name || "",
-          price: parseFloat(price) || 0,
-          unit: unit || "un",
-          quantity: parseInt(quantity) || 0,
-          image_url: image_url || "",
-        });
-      }
-
-      setParsedProducts(products);
-      
-      if (hasCorruptedChars && selectedEncoding === "UTF-8") {
-        toast.warning(`${products.length} produtos encontrados, mas há problemas de acentuação. Tente mudar o encoding para ISO-8859-1.`);
-      } else {
-        toast.success(`${products.length} produtos encontrados no arquivo`);
-      }
-    };
-
-    reader.readAsText(file, selectedEncoding);
-  };
-  
-  const handleEncodingChange = (newEncoding: "UTF-8" | "ISO-8859-1") => {
-    setEncoding(newEncoding);
-    if (file) {
-      parseCSV(file, newEncoding);
+  const parseCSV = async (file: File) => {
+    const text = await file.text();
+    const lines = text.split("\n").filter(line => line.trim());
+    
+    if (lines.length < 2) {
+      toast.error("CSV vazio ou inválido");
+      return;
     }
+
+    const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+    const skuIndex = headers.indexOf("sku");
+    const priceIndex = headers.indexOf("price");
+    const unitIndex = headers.indexOf("unit");
+    const quantityIndex = headers.indexOf("quantity");
+
+    if (skuIndex === -1 || priceIndex === -1) {
+      toast.error("CSV deve conter colunas 'sku' e 'price'");
+      return;
+    }
+
+    const products: ParsedProduct[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(",").map(v => v.trim());
+      
+      if (values.length < 2) continue;
+
+      const product: ParsedProduct = {
+        sku: values[skuIndex],
+        price: parseFloat(values[priceIndex]) || 0,
+        unit: unitIndex !== -1 ? values[unitIndex] : "un",
+        quantity: quantityIndex !== -1 ? parseInt(values[quantityIndex]) || 0 : 0,
+      };
+
+      if (product.sku && product.price > 0) {
+        products.push(product);
+      }
+    }
+
+    setParsedProducts(products);
+    toast.success(`${products.length} produtos encontrados no CSV`);
   };
 
   const handleImport = async () => {
-    if (!selectedLojaSerial) {
+    if (!selectedLojaId) {
       toast.error("Selecione uma loja");
       return;
     }
@@ -138,239 +122,223 @@ export default function ImportarProdutos() {
     }
 
     setImporting(true);
+    setProgress(0);
 
     try {
-      // Buscar loja pelo serial
-      const { data: lojaData, error: lojaError } = await supabase
-        .from("lojas")
-        .select("id")
-        .eq("serial", selectedLojaSerial)
-        .single();
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setProgress(prev => Math.min(prev + 10, 90));
+      }, 500);
 
-      if (lojaError) throw lojaError;
+      const { data, error } = await supabase.functions.invoke('import-products-csv', {
+        body: {
+          csvData: parsedProducts,
+          lojaId: selectedLojaId,
+        },
+      });
 
-      let successCount = 0;
+      clearInterval(progressInterval);
+      setProgress(100);
 
-      for (const product of parsedProducts) {
-        try {
-          // Verificar se produto existe
-          let { data: produtoData, error: produtoError } = await supabase
-            .from("produtos")
-            .select("id")
-            .eq("nome", product.name)
-            .maybeSingle();
-
-          let produtoId: string;
-
-          if (!produtoData) {
-            // Criar produto
-            const { data: newProduto, error: createError } = await supabase
-              .from("produtos")
-              .insert([
-                {
-                  nome: product.name,
-                  sku: product.sku || null,
-                  unit: product.unit,
-                  imagem_url: product.image_url || null,
-                },
-              ])
-              .select()
-              .single();
-
-            if (createError) throw createError;
-            produtoId = newProduto.id;
-          } else {
-            produtoId = produtoData.id;
-          }
-
-          // Criar/atualizar relacionamento produto-loja
-          const { error: relError } = await supabase
-            .from("produtos_lojas")
-            .upsert(
-              {
-                produto_id: produtoId,
-                loja_id: lojaData.id,
-                preco_atual: product.price,
-                quantity: product.quantity,
-              },
-              { onConflict: "produto_id,loja_id" }
-            );
-
-          if (relError) throw relError;
-
-          // Criar histórico de preço
-          const { error: histError } = await supabase.from("historico_precos").insert([
-            {
-              produto_loja_id: `${produtoId}_${lojaData.id}`,
-              preco: product.price,
-            },
-          ]);
-
-          if (histError) console.warn("Erro ao criar histórico:", histError);
-
-          successCount++;
-        } catch (error) {
-          console.error(`Erro ao importar produto ${product.name}:`, error);
-        }
+      if (error) {
+        console.error('Function error:', error);
+        const errorMessage = error.message || JSON.stringify(error);
+        toast.error(`Erro ao importar produtos: ${errorMessage}`, { duration: 8000 });
+        return;
       }
 
-      toast.success(`${successCount} produtos importados com sucesso!`);
-      setParsedProducts([]);
+      if (!data) {
+        toast.error("Nenhum dado retornado da importação");
+        return;
+      }
+
+      const results = data as { created: number; updated: number; errors: string[] };
+
+      console.log('Import results:', results);
+
+      if (results.errors.length > 0) {
+        console.error('Import errors:', results.errors);
+        toast.error(
+          `Importação concluída com ${results.errors.length} erros. ${results.created} criados, ${results.updated} atualizados.`,
+          { duration: 5000 }
+        );
+        // Show first 3 errors
+        results.errors.slice(0, 3).forEach(err => {
+          toast.error(err, { duration: 8000 });
+        });
+      } else {
+        toast.success(
+          `Importação concluída com sucesso! ${results.created} produtos criados, ${results.updated} produtos atualizados.`
+        );
+      }
+
+      // Reset form
       setFile(null);
+      setParsedProducts([]);
+      setSelectedLojaId("");
+      
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
+
     } catch (error) {
-      console.error("Erro na importação:", error);
+      console.error('Error importing products:', error);
       toast.error("Erro ao importar produtos");
     } finally {
       setImporting(false);
+      setProgress(0);
     }
   };
 
-  if (authLoading) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </AdminLayout>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6 max-w-4xl">
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/admin/importacoes")}
-            className="hover:bg-muted"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Importar Produtos</h1>
-            <p className="text-muted-foreground">Importar produtos via CSV para uma loja</p>
-          </div>
-        </div>
+  if (!isAdmin) {
+    return null;
+  }
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>1. Selecione a Loja</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Label htmlFor="loja">Serial da Loja</Label>
-              <Select value={selectedLojaSerial} onValueChange={setSelectedLojaSerial}>
-                <SelectTrigger id="loja">
-                  <SelectValue placeholder="Selecione uma loja" />
+  return (
+    <AdminLayout>
+      <div className="container max-w-4xl mx-auto py-8">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/admin/gerenciar-produtos")}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar
+        </Button>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Importar Produtos via CSV</CardTitle>
+            <CardDescription>
+              Faça upload de um CSV com colunas: sku, price, unit, quantity. 
+              Os produtos serão enriquecidos automaticamente com dados da Open Food Facts.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Selecione a Loja</label>
+              <Select value={selectedLojaId} onValueChange={setSelectedLojaId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Escolha uma loja" />
                 </SelectTrigger>
                 <SelectContent>
                   {lojas.map((loja) => (
-                    <SelectItem key={loja.id} value={loja.serial}>
-                      {loja.serial} - {loja.nome}
+                    <SelectItem key={loja.id} value={loja.id}>
+                      {loja.nome} ({loja.serial})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>2. Upload do Arquivo CSV</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="file">Arquivo CSV</Label>
-                <Input
-                  id="file"
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Arquivo CSV</label>
+              <div className="flex items-center gap-4">
+                <input
                   type="file"
                   accept=".csv"
-                  onChange={handleFileSelect}
-                  className="cursor-pointer"
+                  onChange={handleFileChange}
+                  className="flex-1"
+                  disabled={importing}
                 />
               </div>
-
               {file && (
-                <div>
-                  <Label htmlFor="encoding">Encoding do Arquivo</Label>
-                  <Select value={encoding} onValueChange={handleEncodingChange}>
-                    <SelectTrigger id="encoding">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="UTF-8">UTF-8 (padrão)</SelectItem>
-                      <SelectItem value="ISO-8859-1">ISO-8859-1 / Latin-1 (para arquivos com problemas de acentuação)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Se os acentos estiverem errados no preview, troque para ISO-8859-1
-                  </p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  Arquivo selecionado: {file.name}
+                </p>
               )}
+            </div>
 
-              <div className="bg-muted p-4 rounded-lg">
-                <p className="text-sm font-medium mb-2">Formato esperado do CSV:</p>
-                <pre className="text-xs bg-background p-3 rounded overflow-x-auto">
-                  {`sku,name,price,unit,quantity,image_url
-12345,Arroz Tipo 1,25.90,kg,100,https://...
-67890,Feijão Preto,8.50,kg,50,https://...`}
-                </pre>
-              </div>
-            </CardContent>
-          </Card>
-
-          {parsedProducts.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>3. Preview dos Produtos ({parsedProducts.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {hasEncodingIssues && (
-                  <Alert className="mb-4">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Detectamos problemas de acentuação nos nomes dos produtos. Se os acentos estiverem incorretos, 
-                      selecione <strong>ISO-8859-1</strong> no campo de encoding acima.
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
-                <div className="max-h-96 overflow-y-auto space-y-2">
-                  {parsedProducts.map((product, index) => {
-                    const hasIssue = product.name.includes("�") || /[â€™â€œâ€�ãƒÂ£ãƒÂ§ãƒÂ³]/i.test(product.name);
-                    return (
-                      <div 
-                        key={index} 
-                        className={`flex items-center gap-4 p-3 rounded-lg ${
-                          hasIssue ? "bg-destructive/10 border border-destructive/20" : "bg-muted"
-                        }`}
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            SKU: {product.sku} | R$ {product.price.toFixed(2)} | {product.unit} | Estoque: {product.quantity}
-                          </p>
-                        </div>
-                        {hasIssue && (
-                          <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
-                        )}
-                      </div>
-                    );
-                  })}
+            {parsedProducts.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium">
+                  {parsedProducts.length} produtos encontrados
+                </p>
+                <div className="max-h-40 overflow-y-auto border rounded p-2 text-sm">
+                  {parsedProducts.slice(0, 10).map((p, i) => (
+                    <div key={i} className="py-1">
+                      SKU: {p.sku} | Preço: R$ {p.price.toFixed(2)} | Unidade: {p.unit} | Qtd: {p.quantity}
+                    </div>
+                  ))}
+                  {parsedProducts.length > 10 && (
+                    <p className="text-muted-foreground pt-2">
+                      ... e mais {parsedProducts.length - 10} produtos
+                    </p>
+                  )}
                 </div>
+              </div>
+            )}
 
-                <Button
-                  className="w-full mt-4"
-                  size="lg"
-                  onClick={handleImport}
-                  disabled={importing}
-                >
-                  {importing ? "Importando..." : "Confirmar Importação"}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+            {importing && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Importando produtos...</p>
+                <Progress value={progress} />
+              </div>
+            )}
+
+            <Button
+              onClick={handleImport}
+              disabled={!selectedLojaId || parsedProducts.length === 0 || importing}
+              className="w-full"
+            >
+              {importing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Importando...
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Importar Produtos
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Exemplo de CSV para Teste</CardTitle>
+            <CardDescription>
+              Use códigos de barras reais (EAN/GTIN com 13 dígitos) para que o sistema busque automaticamente 
+              os nomes e imagens dos produtos da Open Food Facts.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-muted p-4 rounded text-sm overflow-x-auto">
+{`sku,price,unit,quantity
+7894900011517,5.99,un,100
+7891991000833,8.50,un,50
+7896005800026,12.90,kg,30
+7891000100103,3.49,un,200`}
+            </pre>
+            <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+              <p>
+                <strong>Exemplos de códigos testados:</strong>
+              </p>
+              <ul className="list-disc list-inside space-y-1 ml-2">
+                <li>7894900011517 - Coca-Cola 2L</li>
+                <li>7891991000833 - Budweiser Lata</li>
+                <li>7896005800026 - Arroz Tio João</li>
+                <li>7891000100103 - Nescau Achocolatado</li>
+              </ul>
+              <p className="mt-3">
+                <strong>Importante:</strong> Os produtos serão enriquecidos automaticamente com nome e imagem 
+                da base mundial de alimentos. Se um produto não for encontrado, será cadastrado como "Produto Desconhecido".
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
