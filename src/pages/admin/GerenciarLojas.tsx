@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminGuard } from "@/components/admin/AdminGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, MapPin } from "lucide-react";
+import { Plus, Pencil, MapPin } from "lucide-react";
 import MapLeafletComponent from "@/components/MapLeaflet";
 
 interface Loja {
@@ -32,7 +33,6 @@ interface Categoria {
 }
 
 export default function GerenciarLojas() {
-  const { isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [lojas, setLojas] = useState<Loja[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -42,17 +42,8 @@ export default function GerenciarLojas() {
   const [mapCoords, setMapCoords] = useState({ lat: -22.91, lng: -43.56 });
 
   useEffect(() => {
-    if (!authLoading && !isAdmin) {
-      navigate("/");
-      toast.error("Acesso negado");
-    }
-  }, [isAdmin, authLoading, navigate]);
-
-  useEffect(() => {
-    if (isAdmin) {
-      fetchData();
-    }
-  }, [isAdmin]);
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -149,45 +140,28 @@ export default function GerenciarLojas() {
     setMapCoords(coords);
   };
 
-  if (loading || authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/admin/dashboard")}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+    <AdminGuard>
+      <AdminLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Gerenciar Lojas</h1>
+              <h2 className="text-3xl font-bold">Gerenciar Lojas</h2>
               <p className="text-muted-foreground">Cadastre e gerencie as lojas do sistema</p>
             </div>
-          </div>
 
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                className="bg-primary hover:bg-primary/90" 
-                onClick={() => {
-                  setEditingLoja(null);
-                  setMapCoords({ lat: -22.91, lng: -43.56 });
-                }}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Loja
-              </Button>
-            </DialogTrigger>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  onClick={() => {
+                    setEditingLoja(null);
+                    setMapCoords({ lat: -22.91, lng: -43.56 });
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Loja
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingLoja ? "Editar Loja" : "Cadastrar Nova Loja"}</DialogTitle>
@@ -363,13 +337,14 @@ export default function GerenciarLojas() {
           ))}
         </div>
 
-        {lojas.length === 0 && (
-          <Card className="p-12 text-center">
-            <p className="text-muted-foreground">Nenhuma loja cadastrada ainda.</p>
-            <p className="text-sm text-muted-foreground mt-2">Clique em "Nova Loja" para começar.</p>
-          </Card>
-        )}
-      </div>
-    </div>
+          {lojas.length === 0 && (
+            <Card className="p-12 text-center">
+              <p className="text-muted-foreground">Nenhuma loja cadastrada ainda.</p>
+              <p className="text-sm text-muted-foreground mt-2">Clique em "Nova Loja" para começar.</p>
+            </Card>
+          )}
+        </div>
+      </AdminLayout>
+    </AdminGuard>
   );
 }

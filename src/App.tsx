@@ -12,13 +12,10 @@ import Perfil from "./pages/Perfil";
 import Configuracoes from "./pages/Configuracoes";
 import Placeholder from "./pages/Placeholder";
 import Vip from "./pages/Vip";
-import Suporte from "./pages/Suporte";
 import SuporteChat from "./pages/SuporteChat";
 import AdminDashboard from "./pages/admin/Dashboard";
 import LojasCode from "./pages/admin/LojasCode";
-import Importacoes from "./pages/admin/Importacoes";
 import ImportarProdutos from "./pages/admin/ImportarProdutos";
-import ImportarProdutosCSV from "./pages/admin/ImportarProdutosCSV";
 import ConfiguracoesAdmin from "./pages/admin/ConfiguracoesAdmin";
 import Users from "./pages/admin/Users";
 import Seeds from "./pages/admin/Seeds";
@@ -28,7 +25,7 @@ import GerenciarProdutos from "./pages/admin/GerenciarProdutos";
 import AtualizarPrecos from "./pages/admin/AtualizarPrecos";
 import GerenciarPedidos from "./pages/admin/GerenciarPedidos";
 import Entregadores from "./pages/admin/Entregadores";
-import SuporteAdmin from "./pages/admin/SuporteAdmin";
+import Suporte from "./pages/admin/Suporte";
 import Logs from "./pages/admin/Logs";
 import Mapa from "./pages/Mapa";
 import PainelEntregador from "./pages/PainelEntregador";
@@ -56,17 +53,15 @@ const App = () => (
             <Route path="/admin/lojas" element={<GerenciarLojas />} />
             <Route path="/admin/lojas-code" element={<LojasCode />} />
             <Route path="/admin/produtos" element={<GerenciarProdutos />} />
-            <Route path="/admin/importacoes" element={<Importacoes />} />
             <Route path="/admin/importar-lojas" element={<ImportarLojas />} />
-          <Route path="/admin/importar-produtos" element={<ImportarProdutos />} />
-          <Route path="/admin/importar-produtos-csv" element={<ImportarProdutosCSV />} />
+            <Route path="/admin/importar-produtos" element={<ImportarProdutos />} />
             <Route path="/admin/configuracoes" element={<ConfiguracoesAdmin />} />
             <Route path="/admin/users" element={<Users />} />
             <Route path="/admin/seeds" element={<Seeds />} />
             <Route path="/admin/precos" element={<AtualizarPrecos />} />
             <Route path="/admin/pedidos" element={<GerenciarPedidos />} />
             <Route path="/admin/entregadores" element={<Entregadores />} />
-            <Route path="/admin/suporte" element={<SuporteAdmin />} />
+            <Route path="/admin/suporte" element={<Suporte />} />
             <Route path="/admin/logs" element={<Logs />} />
             <Route path="/entregador" element={<PainelEntregador />} />
             
@@ -89,7 +84,6 @@ const App = () => (
             
             {/* Other routes */}
             <Route path="/vip" element={<Vip />} />
-            <Route path="/suporte" element={<Suporte />} />
             <Route path="/suporte/chat" element={<SuporteChat />} />
             <Route path="/mapa" element={<Mapa />} />
             
